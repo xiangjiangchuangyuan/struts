@@ -44,6 +44,21 @@ public class MultipartRequestWrapper
 		ServletFileUpload upload = new ServletFileUpload(factory);
 		return upload.getItemIterator(request);
 	}
+	
+//	/**
+//	 * 获取上传的文件
+//	 * 
+//	 * @param request
+//	 * @return
+//	 * @throws FileUploadException
+//	 * @throws IOException
+//	 */
+//	public Map<String, List<FileItem>> processRequest2(HttpServletRequest request) throws FileUploadException, IOException
+//	{
+//		FileItemFactory factory = new DiskFileItemFactory();
+//		ServletFileUpload upload = new ServletFileUpload(factory);
+//		return upload.parseParameterMap(request);
+//	}
 
 	public boolean isMultipartRequest()
 	{

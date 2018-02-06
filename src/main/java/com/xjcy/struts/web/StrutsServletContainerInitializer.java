@@ -22,7 +22,7 @@ public class StrutsServletContainerInitializer implements ServletContainerInitia
 		arg1.addListener(ContextLoaderListener.class);
 		// 增加filter
 		arg1.setAttribute("StrutsFilter", arg1.addFilter("StrutsFilter", StrutsFilter.class));
-
+		
 		if (logger.isDebugEnabled())
 			logger.debug("Container startup with ContextLoaderListener, StrutsFilter");
 	}
