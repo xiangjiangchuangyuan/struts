@@ -18,13 +18,16 @@ public class ObjectWrapper
 {
 	private static final Logger logger = Logger.getLogger(ObjectWrapper.class);
 
-	static final String STR_VERSION_UID = "serialVersionUID";
-	static final String STR_EMPTY = "";
-	static final String STR_SLASH = "\"";
-	static final String STR_OBJECT_LEFT = "{";
-	static final String STR_SLASH_OBJECT = "\":{";
-	static final String STR_SLASH_ARRAY = "\":[";
-	static final Map<String, Field[]> cacheFields = new HashMap<>();
+	private static final String STR_VERSION_UID = "serialVersionUID";
+	//private static final String STR_EMPTY = "";
+	private static final String STR_SLASH = "\"";
+	private static final String STR_OBJECT_LEFT = "{";
+	private static final String STR_OBJECT_RIGHT = "}";
+	//private static final String STR_ARRAY_LEFT = "[";
+	//private static final String STR_ARRAY_RIGHT = "]";
+	private static final String STR_SLASH_OBJECT = "\":{";
+	private static final String STR_SLASH_ARRAY = "\":[";
+	private static final Map<String, Field[]> cacheFields = new HashMap<>();
 
 	public String write(Map<String, Object> jsonMap)
 	{
@@ -42,6 +45,10 @@ public class ObjectWrapper
 		String str = json.toString();
 		if (str.indexOf("\n") != -1)
 			str = str.replaceAll("\\n", "\\\\n");
+		if (str.indexOf("\t") != -1)
+			str = str.replaceAll("\\t", "\\\\t");
+		if (str.indexOf("\r") != -1)
+			str = str.replaceAll("\\r", "\\\\r");
 		return str;
 	}
 
@@ -51,13 +58,8 @@ public class ObjectWrapper
 		{
 			// do noting
 		}
-		else if (value instanceof String || value instanceof CharSequence)
-		{
-			if (value.toString().startsWith("{") || value.toString().startsWith("["))
-				json.append(STR_SLASH).append(key).append("\":").append(value).append(",");
-			else
-				json.append(STR_SLASH).append(key).append("\":\"").append(value).append("\",");
-		}
+		else if (value instanceof String || value instanceof CharSequence || value.getClass().isEnum())
+			json.append(STR_SLASH).append(key).append("\":\"").append(appendString(value.toString())).append("\",");
 		else if (value instanceof Integer || value instanceof Boolean || value instanceof Double
 				|| value instanceof Long)
 			json.append(STR_SLASH).append(key).append("\":").append(value).append(",");
@@ -70,6 +72,11 @@ public class ObjectWrapper
 			appendList(key, (Collection<?>) value, json);
 		else // 解析bean
 			appendBean(key, value, json);
+	}
+	
+	private static String appendString(String str)
+	{
+		return str.replace("\"", "\\\"");
 	}
 
 	private static void appendBean(String key, Object value, StringBuilder json)
@@ -106,7 +113,7 @@ public class ObjectWrapper
 	{
 		if (key == null)
 		{
-			json.append("{");
+			json.append(STR_OBJECT_LEFT);
 			Set<?> keys = value.keySet();
 			for (Object obj : keys)
 			{
@@ -114,7 +121,7 @@ public class ObjectWrapper
 			}
 			if (!value.isEmpty())
 				json.delete(json.length() - 1, json.length());
-			json.append("}");
+			json.append(STR_OBJECT_RIGHT);
 		}
 		else
 		{
