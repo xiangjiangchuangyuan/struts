@@ -60,6 +60,24 @@
     </attribute>
   </tag>
   <tag>
+    <description>cutstr</description>
+    <name>cutstr</name>
+    <tag-class>com.xjcy.struts.jstl.tag.CutStringTag</tag-class>
+    <body-content>JSP</body-content>
+    <attribute>
+        <description>A string.</description>
+        <name>str</name>
+        <required>true</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+        <description>A number.</description>
+        <name>len</name>
+        <required>true</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
     <description>case</description>
     <name>case</name>
     <tag-class>com.xjcy.struts.jstl.tag.CaseTag</tag-class>

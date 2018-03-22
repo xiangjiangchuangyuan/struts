@@ -51,22 +51,26 @@ public class RoundTag extends BodyTagSupport
 		}
 		try
 		{
-			double d = 0.00D;
 			try
 			{
-				d = Double.parseDouble(value);
+				double d = Double.parseDouble(value);
+				// 输出到浏览器
+				this.pageContext.getOut().append(new java.text.DecimalFormat(format).format(d));
 			}
 			catch (Exception e)
 			{
 				logger.error("输出round标签失败", e);
+				this.pageContext.getOut().append(format.replace("#", "0"));
 			}
-			// 输出到浏览器
-			this.pageContext.getOut().append(new java.text.DecimalFormat(format).format(d));
 		}
 		catch (IOException e)
 		{
 			logger.error("输出round标签失败", e);
 		}
 		return EVAL_PAGE;
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(new java.text.DecimalFormat("#.00").format(0.00D).toString());
 	}
 }
