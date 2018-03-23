@@ -65,13 +65,13 @@ public abstract class WebContextUtils
 		}
 	}
 
-	public static boolean isAction(Class<?> beanClass) throws ClassNotFoundException
+	public static boolean isAction(Class<?> beanClass)
 	{
 		// 判断ActionSupport是不是beanClass的父类
 		return ActionSupport.class.isAssignableFrom(beanClass);
 	}
 
-	public static boolean isInterceptor(Class<?> beanClass) throws ClassNotFoundException
+	public static boolean isInterceptor(Class<?> beanClass)
 	{
 		// 判断ActionSupport是不是beanClass的父类
 		return ActionInterceptor.class.isAssignableFrom(beanClass);
