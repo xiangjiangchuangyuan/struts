@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.FilterRegistration.Dynamic;
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -188,19 +190,22 @@ public class StrutsContext
 
 	private void mappingAction(ServletContext sc)
 	{
-		Dynamic filter = (Dynamic) sc.getAttribute("StrutsFilter");
+		FilterRegistration filter = (FilterRegistration)sc.getAttribute("StrutsFilter");
+		EnumSet<DispatcherType> dispatcherTypes = EnumSet.allOf(DispatcherType.class);
+		dispatcherTypes.add(DispatcherType.REQUEST);
+		dispatcherTypes.add(DispatcherType.FORWARD);
 		// 如果没有通配符的链接
 		if (patternActionMap.isEmpty())
 		{
 			Set<String> actions = actionMap.keySet();
 			for (String action : actions)
 			{
-				filter.addMappingForUrlPatterns(null, true, action);
+				filter.addMappingForUrlPatterns(dispatcherTypes, true, action);
 			}
 		}
 		else
 		{
-			filter.addMappingForUrlPatterns(null, true, "/*");
+			filter.addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 		}
 	}
 
