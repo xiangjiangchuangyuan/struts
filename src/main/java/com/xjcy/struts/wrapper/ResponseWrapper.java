@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.xjcy.struts.context.WebContextUtils;
-import com.xjcy.struts.mapper.JSONObj;
+import com.xjcy.struts.mapper.JSONMap;
 import com.xjcy.struts.mapper.ModelAndView;
 import com.xjcy.util.ObjectUtils;
 import com.xjcy.util.RedisUtils;
@@ -56,8 +56,8 @@ public class ResponseWrapper
 			dealView(resultObj, request, response);
 		else if (returnType.equals(String.class))
 			dealString(resultObj, request, response);
-		else if (returnType.equals(JSONObj.class))
-			dealJSON((JSONObj) resultObj, request, response);
+		else if (returnType.equals(JSONMap.class))
+			dealJSON((JSONMap) resultObj, request, response);
 		else throw new ServletException("不支持的返回类型 " + returnType.getName());
 	}
 
@@ -105,7 +105,7 @@ public class ResponseWrapper
 			logger.debug("[CACHE_JSON]" + json);
 	}
 
-	private void dealJSON(JSONObj obj, HttpServletRequest request, HttpServletResponse response)
+	private void dealJSON(JSONMap obj, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException
 	{
 		String json = obj.toString();

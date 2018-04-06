@@ -223,22 +223,17 @@ public class StrutsContext
 		clear();
 		if (startedInit.size() > 0)
 		{
-			destroyInit();
-		}
-	}
-
-	private void destroyInit()
-	{
-		try
-		{
-			for (StrutsInit init : startedInit)
+			try
 			{
-				init.destroy();
+				for (StrutsInit init : startedInit)
+				{
+					init.destroy();
+				}
 			}
-		}
-		catch (Exception e)
-		{
-			logger.error("Struts destroy faild", e);
+			catch (Exception e)
+			{
+				logger.error("Struts destroy faild", e);
+			}
 		}
 	}
 
