@@ -27,12 +27,15 @@ public class StrutsFilter implements Filter
 	private static String basePath;
 	private static String serverName;
 	private StrutsContext context;
-	private static final ResponseWrapper responseWrapper = new ResponseWrapper();
+	private static ResponseWrapper responseWrapper;
 
 	@Override
 	public void destroy()
 	{
 		context.clear();
+		responseWrapper = null;
+		basePath = null;
+		serverName = null;
 		context = null;
 		if (logger.isDebugEnabled())
 			logger.debug("destroy context");
@@ -119,6 +122,7 @@ public class StrutsFilter implements Filter
 		if (logger.isDebugEnabled())
 			logger.debug("Find actions " + context.actionSize() + " beans " + context.beanSize() + " interceptors "
 					+ context.interceptorSize());
+		responseWrapper = new ResponseWrapper(arg0.getServletContext());
 	}
 
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.zip.GZIPOutputStream;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -23,11 +24,16 @@ public class ResponseWrapper
 	private static final Logger logger = Logger.getLogger(ResponseWrapper.class);
 
 	private static final String CONTENT_ENCODING = "UTF-8";
-	private final JspWrapper jspWrapper = new JspWrapper();
+	private final JspWrapper jspWrapper;
 	private Class<?> returnType;
 	private Object resultObj;
-	private boolean redisCache;
-	private int cacheSeconds;
+	private boolean redisCache = false;
+	private int cacheSeconds = 0;
+	
+	public ResponseWrapper(ServletContext sc)
+	{
+		jspWrapper = new JspWrapper(sc);
+	}
 
 	public void setReturnObj(Class<?> returnType, Object resultObj)
 	{

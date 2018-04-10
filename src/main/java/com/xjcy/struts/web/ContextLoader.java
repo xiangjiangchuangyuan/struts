@@ -33,7 +33,7 @@ public class ContextLoader {
 			this.severtContext = arg1;
 			// 扫描所有文件
 			context.clear();
-			scanPaths(arg1, arg1.getResourcePaths(STR_CLASS_PATH));
+			scanPaths(arg1, arg1.getResourcePaths(STR_SLASH));
 		} catch (Exception e) {
 			logger.error("Context load faild", e);
 		}
@@ -64,6 +64,8 @@ public class ContextLoader {
 							context.addClass(cla);
 						}
 					}
+					else if(path.endsWith(".jsp") || path.endsWith(".jspx"))
+						context.addJsp(path);
 				}
 			}
 		}
