@@ -31,7 +31,6 @@ public abstract class WebContextUtils
 	// config
 	private static final Properties prop = new Properties();
 	static Boolean isLinux;
-	static String outputDir = null;
 
 	public static StrutsContext getWebApplicationContext(ServletContext servletContext)
 	{
@@ -139,10 +138,8 @@ public abstract class WebContextUtils
 		return isLinux;
 	}
 
-	public static File getJspServletFile(ServletContext context, String className)
+	public static File getJspServletFile(File output, String className)
 	{
-		if (outputDir == null)
-			outputDir = context.getRealPath(StrutsContext.CLASS_PATH);
-		return new File(outputDir + "/org/apache/jsp/" + className);
+		return new File(output, "/org/apache/jsp/" + className);
 	}
 }

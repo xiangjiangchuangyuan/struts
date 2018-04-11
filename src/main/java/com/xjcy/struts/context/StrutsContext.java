@@ -57,7 +57,7 @@ public class StrutsContext {
 		}
 		// 判断线上环境，执行预编译
 		if (jspList.size() > 0 && WebContextUtils.isLinuxOS()) {
-			new JspC(sc, jspList, true).execute();
+			new JspC(sc, true).execute(jspList);
 		}
 	}
 

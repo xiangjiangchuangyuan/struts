@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
@@ -18,13 +15,17 @@ import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.JspRuntimeContext;
+import org.apache.jasper.compiler.JspUtil;
 import org.apache.jasper.compiler.TagPluginManager;
 import org.apache.jasper.compiler.TldCache;
+import org.apache.jasper.runtime.HttpJspBase;
 import org.apache.jasper.servlet.JspCServletContext;
 import org.apache.jasper.servlet.TldScanner;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import com.xjcy.struts.mapper.JspCache;
+import com.xjcy.struts.wrapper.JspClassLoader;
 import com.xjcy.util.FileUtils;
 
 /***
@@ -45,23 +46,15 @@ public class JspC implements Options {
 	private JspRuntimeContext rctxt;
 	private JspConfig jspConfig;
 	private TagPluginManager tagPluginManager;
-	private final List<String> pages = new Vector<>();
 
 	private static final String Encoding = "UTF-8";
 
-	public JspC(ServletContext sc, boolean clear) {
-		this(sc, null, clear);
-	}
 
-	public JspC(ServletContext sc, List<String> jspList, boolean clear) {
+	public JspC(ServletContext sc, boolean clear) {
 		this.uriRoot = sc.getRealPath("/");
 		String outputDir = sc.getRealPath(StrutsContext.CLASS_PATH);
 		this.scratchDir = new File(outputDir);
 		try {
-			if (jspList != null) {
-				pages.addAll(jspList);
-				logger.debug("Add pages with list " + jspList.size());
-			}
 			initServletContext(this.getClass().getClassLoader());
 			if (clear) {
 				File output = new File(outputDir + "/org");
@@ -75,22 +68,17 @@ public class JspC implements Options {
 		}
 	}
 
-	public void setJspFiles(String jspFiles) {
-		if (jspFiles == null) {
-			return;
-		}
-		StringTokenizer tok = new StringTokenizer(jspFiles, ",");
-		while (tok.hasMoreTokens()) {
-			pages.add(tok.nextToken());
-		}
-	}
-
-	public void execute() {
+	public void execute(List<String> jspList) {
 		long start = System.currentTimeMillis();
-		Iterator<String> iter = pages.iterator();
-		while (iter.hasNext()) {
-			processFile(iter.next());
+		for (String jsp : jspList) {
+			processFile(jsp);
 		}
+		logger.debug("Jsp servlet build success in " + (System.currentTimeMillis() - start) + " ms");
+	}
+	
+	public void execute(String jspUri) {
+		long start = System.currentTimeMillis();
+		processFile(jspUri);
 		logger.debug("Jsp servlet build success in " + (System.currentTimeMillis() - start) + " ms");
 	}
 
@@ -110,18 +98,33 @@ public class JspC implements Options {
 		tagPluginManager = new TagPluginManager(context);
 	}
 
-	protected void processFile(String file) {
+	protected void processFile(String jspUri) {
 		try {
-			String jspUri = file.replace('\\', '/');
 			JspCompilationContext clctxt = new JspCompilationContext(jspUri, this, context, null, rctxt);
 
-			logger.debug("Compiling file: " + file);
+			logger.debug("Compiling and cache file: " + jspUri);
 			clctxt.createCompiler().compile(true, true);
+			
+			JspCache.put(jspUri, getServlet(scratchDir, jspUri));
 		} catch (Exception e) {
-			logger.error("Compile '" + file + "' faild", e);
+			logger.error("Compile '" + jspUri + "' faild", e);
 		}
 	}
 
+	private static HttpJspBase getServlet(File output, String jspUri) {
+		try {
+			String className = JspUtil.makeJavaPackage(jspUri);
+			File servletFile = WebContextUtils.getJspServletFile(output, className.replace(".", "/") + ".class");
+			JspClassLoader loader = new JspClassLoader(servletFile, Thread.currentThread().getContextClassLoader());
+			Class<?> cla = loader.loadClass("org.apache.jsp." + className);
+			loader.close();
+			return (HttpJspBase) cla.newInstance();
+		} catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
+			logger.error("获取jspServlet失败", e);
+			return null;
+		}
+	}
+	
 	@Override
 	public boolean getErrorOnUseBeanInvalidClassAttribute() {
 		// TODO Auto-generated method stub

@@ -50,7 +50,7 @@ public class ContextLoader {
 					scanPaths(arg1, arg1.getResourcePaths(path));
 				else {
 					if (path.endsWith(STR_SUBFIX)) {
-						Class<?> cla = getClass(arg1, path);
+						Class<?> cla = getClass(path);
 						if (cla != null && !cla.isInterface()) {
 							bindResource(cla);
 							// 如果继承了ActionSupport，则添加到集合中去
@@ -71,7 +71,7 @@ public class ContextLoader {
 		}
 	}
 
-	private Class<?> getClass(ServletContext arg1, String path) {
+	private Class<?> getClass(String path) {
 		path = path.replace(STR_CLASS_PATH, STR_EMPTY);
 		path = path.replace(STR_SUBFIX, STR_EMPTY);
 		path = path.replace(STR_SLASH, STR_DOT);
