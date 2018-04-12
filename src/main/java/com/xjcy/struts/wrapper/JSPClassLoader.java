@@ -8,13 +8,13 @@ import java.io.InputStream;
 
 import org.apache.log4j.Logger;
 
-public class JspClassLoader extends ClassLoader
+public class JSPClassLoader extends ClassLoader
 {
-	private static final Logger logger = Logger.getLogger(JspClassLoader.class);
+	private static final Logger logger = Logger.getLogger(JSPClassLoader.class);
 
 	private File classFile;
 
-	public JspClassLoader(File file, ClassLoader parent)
+	public JSPClassLoader(File file, ClassLoader parent)
 	{
 		super(parent);
 		this.classFile = file;

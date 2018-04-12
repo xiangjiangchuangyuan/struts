@@ -1,4 +1,4 @@
-package com.xjcy.struts.mapper;
+package com.xjcy.struts.cache;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,7 @@ import org.apache.jasper.runtime.HttpJspBase;
  * @author YYDF
  * 2018-04-11
  */
-public class JspCache {
+public class JSPCache {
 	private static final Map<String, HttpJspBase> jspServlets = new HashMap<>();
 
 	public static HttpJspBase getServlet(String jspUri) {

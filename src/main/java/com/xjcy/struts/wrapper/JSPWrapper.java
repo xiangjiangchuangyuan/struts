@@ -12,33 +12,32 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.jasper.runtime.HttpJspBase;
 import org.apache.log4j.Logger;
 
-import com.xjcy.struts.context.JspC;
+import com.xjcy.struts.cache.JSPCache;
 import com.xjcy.struts.context.WebContextUtils;
-import com.xjcy.struts.mapper.JspCache;
 
 /***
  * JSP响应处理
  * @author YYDF
  * 2018-04-11
  */
-public class JspWrapper {
-	private static final Logger logger = Logger.getLogger(JspWrapper.class);
+public class JSPWrapper {
+	private static final Logger logger = Logger.getLogger(JSPWrapper.class);
 
-	private final JspC jspc;
+	private final JSPCompile jspc;
 
-	public JspWrapper(ServletContext sc) {
-		jspc = new JspC(sc, false);
+	public JSPWrapper(ServletContext sc) {
+		jspc = new JSPCompile(sc, false);
 	}
 
 	public void processJsp(String jspUri, HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		if (WebContextUtils.isLinuxOS()) {
 			if ("1".equals(request.getParameter("reload"))) {
-				logger.debug("Recompile jsp " + jspUri);
+				logger.debug("Recompiling and caching JSP " + jspUri);
 				jspc.execute(jspUri);
 			}
 			// 线上环境获取预编译的jspServlet
-			HttpJspBase jspBase = JspCache.getServlet(jspUri);
+			HttpJspBase jspBase = JSPCache.getServlet(jspUri);
 			if (jspBase == null)
 				throw new IOException("Not found jsp servlet " + jspUri);
 			jspBase.init(new JspServletConfig(request.getServletContext()));

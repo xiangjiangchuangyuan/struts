@@ -27,6 +27,7 @@ import com.xjcy.struts.StrutsInit;
 import com.xjcy.struts.annotation.Order;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.mapper.SpringBean;
+import com.xjcy.struts.wrapper.JSPCompile;
 
 public class StrutsContext {
 	private static final Logger logger = Logger.getLogger(StrutsContext.class);
@@ -57,7 +58,7 @@ public class StrutsContext {
 		}
 		// 判断线上环境，执行预编译
 		if (jspList.size() > 0 && WebContextUtils.isLinuxOS()) {
-			new JspC(sc, true).execute(jspList);
+			new JSPCompile(sc, true).execute(jspList);
 		}
 	}
 

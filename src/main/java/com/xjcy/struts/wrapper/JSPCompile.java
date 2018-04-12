@@ -1,4 +1,4 @@
-package com.xjcy.struts.context;
+package com.xjcy.struts.wrapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +24,9 @@ import org.apache.jasper.servlet.TldScanner;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import com.xjcy.struts.mapper.JspCache;
-import com.xjcy.struts.wrapper.JspClassLoader;
+import com.xjcy.struts.cache.JSPCache;
+import com.xjcy.struts.context.StrutsContext;
+import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.util.FileUtils;
 
 /***
@@ -34,9 +35,9 @@ import com.xjcy.util.FileUtils;
  * @author YYDF
  *
  */
-public class JspC implements Options {
+public class JSPCompile implements Options {
 
-	static final Logger logger = Logger.getLogger(JspC.class);
+	static final Logger logger = Logger.getLogger(JSPCompile.class);
 
 	private String uriRoot;
 	private File scratchDir;
@@ -50,7 +51,7 @@ public class JspC implements Options {
 	private static final String Encoding = "UTF-8";
 
 
-	public JspC(ServletContext sc, boolean clear) {
+	public JSPCompile(ServletContext sc, boolean clear) {
 		this.uriRoot = sc.getRealPath("/");
 		String outputDir = sc.getRealPath(StrutsContext.CLASS_PATH);
 		this.scratchDir = new File(outputDir);
@@ -105,7 +106,7 @@ public class JspC implements Options {
 			logger.debug("Compiling and cache file: " + jspUri);
 			clctxt.createCompiler().compile(true, true);
 			
-			JspCache.put(jspUri, getServlet(scratchDir, jspUri));
+			JSPCache.put(jspUri, getServlet(scratchDir, jspUri));
 		} catch (Exception e) {
 			logger.error("Compile '" + jspUri + "' faild", e);
 		}
@@ -115,7 +116,7 @@ public class JspC implements Options {
 		try {
 			String className = JspUtil.makeJavaPackage(jspUri);
 			File servletFile = WebContextUtils.getJspServletFile(output, className.replace(".", "/") + ".class");
-			JspClassLoader loader = new JspClassLoader(servletFile, Thread.currentThread().getContextClassLoader());
+			JSPClassLoader loader = new JSPClassLoader(servletFile, Thread.currentThread().getContextClassLoader());
 			Class<?> cla = loader.loadClass("org.apache.jsp." + className);
 			loader.close();
 			return (HttpJspBase) cla.newInstance();

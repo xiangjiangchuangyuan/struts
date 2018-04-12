@@ -24,7 +24,7 @@ public class ResponseWrapper
 	private static final Logger logger = Logger.getLogger(ResponseWrapper.class);
 
 	private static final String CONTENT_ENCODING = "UTF-8";
-	private final JspWrapper jspWrapper;
+	private final JSPWrapper jspWrapper;
 	private Class<?> returnType;
 	private Object resultObj;
 	private boolean redisCache = false;
@@ -32,7 +32,7 @@ public class ResponseWrapper
 	
 	public ResponseWrapper(ServletContext sc)
 	{
-		jspWrapper = new JspWrapper(sc);
+		jspWrapper = new JSPWrapper(sc);
 	}
 
 	public void setReturnObj(Class<?> returnType, Object resultObj)
