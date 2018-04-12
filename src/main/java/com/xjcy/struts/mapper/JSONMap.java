@@ -11,10 +11,10 @@ import com.xjcy.struts.wrapper.JSONWrapper;
  * @author YYDF
  *
  */
-public class JSONMap
+public final class JSONMap
 {
-	final Map<String, Object> jsonMap = new HashMap<>();
-	static final JSONWrapper wrapper = new JSONWrapper();
+	private final Map<String, Object> jsonMap = new HashMap<>();
+	private final JSONWrapper wrapper = new JSONWrapper();
 	private String json;
 	
 	public JSONMap()
@@ -46,20 +46,12 @@ public class JSONMap
 
 	public static JSONMap success()
 	{
-		JSONMap jsonObj = new JSONMap();
-		jsonObj.put("success", true);
-		jsonObj.put("errcode", 0);
-		jsonObj.put("errmsg", "ok");
-		return jsonObj;
+		return new JSONMap().put("success", true).put("errcode", 0).put("errmsg", "ok");
 	}
 
 	public static JSONMap error(int errcode, String errmsg)
 	{
-		JSONMap jsonObj = new JSONMap();
-		jsonObj.put("success", false);
-		jsonObj.put("errcode", errcode);
-		jsonObj.put("errmsg", errmsg);
-		return jsonObj;
+		return new JSONMap().put("success", false).put("errcode", errcode).put("errmsg", errmsg);
 	}
 
 	@Override
