@@ -14,9 +14,9 @@ import org.apache.log4j.Logger;
  * 
  * @author YYDF 2018-01-15
  */
-public class ObjectWrapper
+public class JSONWrapper
 {
-	private static final Logger logger = Logger.getLogger(ObjectWrapper.class);
+	private static final Logger logger = Logger.getLogger(JSONWrapper.class);
 
 	private static final String STR_VERSION_UID = "serialVersionUID";
 	//private static final String STR_EMPTY = "";

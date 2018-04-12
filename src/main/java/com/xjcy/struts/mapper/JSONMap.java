@@ -3,7 +3,7 @@ package com.xjcy.struts.mapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.xjcy.struts.wrapper.ObjectWrapper;
+import com.xjcy.struts.wrapper.JSONWrapper;
 
 /**
  * JSON对象处理类
@@ -14,7 +14,7 @@ import com.xjcy.struts.wrapper.ObjectWrapper;
 public class JSONMap
 {
 	final Map<String, Object> jsonMap = new HashMap<>();
-	static final ObjectWrapper wrapper = new ObjectWrapper();
+	static final JSONWrapper wrapper = new JSONWrapper();
 	private String json;
 	
 	public JSONMap()

@@ -122,6 +122,7 @@ public class ResponseWrapper
 		}
 		response.setContentType(WebContextUtils.CONTENT_UTF8_JSON);
 		response.addHeader("Access-Control-Allow-Origin", "*");
+		response.addHeader("Access-Control-Allow-Method", "GET,POST,PUT");
 		// 清缓存
 		response.setHeader("Pragma", "No-cache");
 		response.setHeader("Cache-Control", "no-cache");
