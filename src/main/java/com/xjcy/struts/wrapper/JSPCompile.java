@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.xjcy.struts.cache.JSPCache;
-import com.xjcy.struts.context.StrutsContext;
 import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.util.FileUtils;
+import com.xjcy.util.STR;
 
 /***
  * 预编译jsp文件，移除ant引用 2018-04-10
@@ -48,12 +48,9 @@ public class JSPCompile implements Options {
 	private JspConfig jspConfig;
 	private TagPluginManager tagPluginManager;
 
-	private static final String Encoding = "UTF-8";
-
-
 	public JSPCompile(ServletContext sc, boolean clear) {
 		this.uriRoot = sc.getRealPath("/");
-		String outputDir = sc.getRealPath(StrutsContext.CLASS_PATH);
+		String outputDir = sc.getRealPath(STR.WEB_CLASS_PATH);
 		this.scratchDir = new File(outputDir);
 		try {
 			initServletContext(this.getClass().getClassLoader());
@@ -237,7 +234,7 @@ public class JSPCompile implements Options {
 
 	@Override
 	public String getJavaEncoding() {
-		return Encoding;
+		return STR.ENCODING_UTF8;
 	}
 
 	@Override

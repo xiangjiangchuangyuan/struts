@@ -18,16 +18,16 @@ import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.wrapper.ResponseWrapper;
 import com.xjcy.util.RedisUtils;
+import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
 public class StrutsFilter implements Filter
 {
 	private static final Logger logger = Logger.getLogger(StrutsFilter.class);
-	private static final String CHARSET_UTF8 = "utf-8";
 	private static String basePath;
 	private static String serverName;
 	private StrutsContext context;
-	private static ResponseWrapper responseWrapper;
+	private ResponseWrapper responseWrapper;
 
 	@Override
 	public void destroy()
@@ -46,8 +46,8 @@ public class StrutsFilter implements Filter
 			throws IOException, ServletException
 	{
 		// 设置编码
-		arg0.setCharacterEncoding(CHARSET_UTF8);
-		arg1.setCharacterEncoding(CHARSET_UTF8);
+		arg0.setCharacterEncoding(STR.ENCODING_UTF8);
+		arg1.setCharacterEncoding(STR.ENCODING_UTF8);
 		HttpServletRequest request = (HttpServletRequest) arg0;
 		String servletPath = request.getServletPath();
 		if (logger.isDebugEnabled())

@@ -6,7 +6,7 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 
-import com.xjcy.struts.context.WebContextUtils;
+import com.xjcy.util.STR;
 
 public class ContextLoaderListener implements ServletContextListener
 {
@@ -20,8 +20,8 @@ public class ContextLoaderListener implements ServletContextListener
 		if (contextLoader != null)
 			this.contextLoader.destroy();
 		ServletContext servletContext = arg0.getServletContext();
-		servletContext.removeAttribute(WebContextUtils.STRUTS2_IS_LOAD);
-		servletContext.removeAttribute(WebContextUtils.STRUTS2_CONTEXT);
+		servletContext.removeAttribute(STR.STRUTS_IS_LOAD);
+		servletContext.removeAttribute(STR.STRUTS_CONTEXT);
 		if (logger.isDebugEnabled())
 			logger.debug("Struts context closed");
 	}
@@ -32,8 +32,8 @@ public class ContextLoaderListener implements ServletContextListener
 		ServletContext servletContext = arg0.getServletContext();
 		this.contextLoader = new ContextLoader(servletContext);
 		this.contextLoader.startup();
-		servletContext.setAttribute(WebContextUtils.STRUTS2_IS_LOAD, true);
-		servletContext.setAttribute(WebContextUtils.STRUTS2_CONTEXT, this.contextLoader.getContext());
+		servletContext.setAttribute(STR.STRUTS_IS_LOAD, true);
+		servletContext.setAttribute(STR.STRUTS_CONTEXT, this.contextLoader.getContext());
 		if (logger.isDebugEnabled())
 			logger.debug("Struts context started");
 	}

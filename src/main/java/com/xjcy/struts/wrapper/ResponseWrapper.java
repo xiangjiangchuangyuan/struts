@@ -18,12 +18,12 @@ import com.xjcy.struts.mapper.JSONMap;
 import com.xjcy.struts.mapper.ModelAndView;
 import com.xjcy.util.ObjectUtils;
 import com.xjcy.util.RedisUtils;
+import com.xjcy.util.STR;
 
 public class ResponseWrapper
 {
 	private static final Logger logger = Logger.getLogger(ResponseWrapper.class);
 
-	private static final String CONTENT_ENCODING = "UTF-8";
 	private final JSPWrapper jspWrapper;
 	private Class<?> returnType;
 	private Object resultObj;
@@ -64,7 +64,8 @@ public class ResponseWrapper
 			dealString(resultObj, request, response);
 		else if (returnType.equals(JSONMap.class))
 			dealJSON((JSONMap) resultObj, request, response);
-		else throw new ServletException("不支持的返回类型 " + returnType.getName());
+		else 
+			throw new ServletException("不支持的返回类型 " + returnType.getName());
 	}
 
 	private void dealNone(Object resultObj, HttpServletRequest request, HttpServletResponse response)
@@ -87,10 +88,10 @@ public class ResponseWrapper
 			throws IOException, ServletException
 	{
 		String text = resultObj.toString();
-		response.setContentType(WebContextUtils.CONTENT_TYPE_TEXT);
+		response.setContentType(STR.CONTENT_TYPE_TEXT);
 		// 清缓存
-		response.setHeader("Pragma", "No-cache");
-		response.setHeader("Cache-Control", "no-cache");
+		response.setHeader(STR.HEADER_PRAGMA, "No-cache");
+		response.setHeader(STR.HEADER_CACHE_CONTROL, "no-cache");
 		response.setDateHeader("Expires", 0);
 		writeResponse(response, request, text);
 		if (logger.isDebugEnabled())
@@ -100,7 +101,7 @@ public class ResponseWrapper
 	private void dealJSON(String json, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException
 	{
-		response.setContentType(WebContextUtils.CONTENT_UTF8_JSON);
+		response.setContentType(STR.CONTENT_TYPE_JSON);
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		// 清缓存
 		response.setHeader("Pragma", "No-cache");
@@ -120,7 +121,7 @@ public class ResponseWrapper
 			String key = request.getServletPath() + "_" + request.getQueryString();
 			RedisUtils.set(key, json, cacheSeconds);
 		}
-		response.setContentType(WebContextUtils.CONTENT_UTF8_JSON);
+		response.setContentType(STR.CONTENT_TYPE_JSON);
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		response.addHeader("Access-Control-Allow-Method", "GET,POST,PUT");
 		// 清缓存
@@ -138,7 +139,7 @@ public class ResponseWrapper
 		int len = text.length();
 		if (WebContextUtils.isGZipEncoding(request) && len > 256)
 		{
-			byte[] data = ObjectUtils.string2Byte(text, CONTENT_ENCODING);
+			byte[] data = ObjectUtils.string2Byte(text, STR.ENCODING_UTF8);
 			if (data == null)
 				throw new ServletException("Response data can not be null");
 			writeGZipData(response, data, len);

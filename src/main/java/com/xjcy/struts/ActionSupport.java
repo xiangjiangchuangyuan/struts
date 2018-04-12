@@ -19,6 +19,7 @@ import com.xjcy.struts.mapper.MultipartFile;
 import com.xjcy.struts.web.SessionListener;
 import com.xjcy.struts.wrapper.MultipartRequestWrapper;
 import com.xjcy.util.DateEx;
+import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
 public abstract class ActionSupport {
@@ -29,9 +30,6 @@ public abstract class ActionSupport {
 	private boolean isMultipartRequest = false;
 	private final Map<String, String> paras = new HashMap<>();
 	private final Map<String, MultipartFile> multipartFiles = new HashMap<>();
-
-	private static final String VAL_UNDEFINED = "undefined";
-	private static final String VAL_NULL = "null";
 
 	protected HttpServletRequest getRequest() {
 		return httpServletRequest;
@@ -60,7 +58,7 @@ public abstract class ActionSupport {
 				str = (obj != null) ? obj.toString() : null;
 			}
 		}
-		if (VAL_UNDEFINED.equals(str))
+		if (STR.VAL_UNDEFINED.equals(str) || STR.VAL_NULL.equals(str))
 			return null;
 		return str;
 	}
@@ -70,7 +68,7 @@ public abstract class ActionSupport {
 	}
 
 	protected <T> T getPostData(Class<T> cla) {
-		return getPostData(cla, VAL_NULL);
+		return getPostData(cla, STR.VAL_NULL);
 	}
 
 	protected <T> T getPostData(Class<T> cla, String ignore) {
@@ -81,21 +79,21 @@ public abstract class ActionSupport {
 				String str;
 				String fieldType;
 				for (Field field : fields) {
-					if (!VAL_NULL.equals(ignore) && field.getName().equals(ignore))
+					if (ignore != null && field.getName().equals(ignore))
 						continue;
 					str = getParameter(field.getName());
 					fieldType = field.getGenericType().toString();
 					if (!StringUtils.isEmpty(str)) {
 						field.setAccessible(true);
-						if ("class java.lang.Integer".equals(fieldType))
+						if (STR.CLASS_INTEGER.equals(fieldType))
 							field.set(tt, Integer.valueOf(str));
-						else if ("class java.util.Date".equals(fieldType))
+						else if (STR.CLASS_DATE.equals(fieldType))
 							field.set(tt, DateEx.toDate(str));
-						else if ("class java.lang.Double".equals(fieldType))
+						else if (STR.CLASS_DOUBLE.equals(fieldType))
 							field.set(tt, Double.parseDouble(str));
-						else if ("class java.lang.Long".equals(fieldType))
+						else if (STR.CLASS_LONG.equals(fieldType))
 							field.set(tt, Long.parseLong(str));
-						else if ("class java.lang.Boolean".equals(fieldType))
+						else if (STR.CLASS_BOOLEAN.equals(fieldType))
 							field.set(tt, Boolean.parseBoolean(str));
 						else
 							field.set(tt, str);
@@ -126,7 +124,7 @@ public abstract class ActionSupport {
 						while (files.hasNext()) {
 							FileItemStream stream = files.next();
 							if (stream.isFormField())
-								paras.put(stream.getFieldName(), Streams.asString(stream.openStream(), "utf-8"));
+								paras.put(stream.getFieldName(), Streams.asString(stream.openStream(), STR.ENCODING_UTF8));
 							else {
 								MultipartFile file = new MultipartFile(stream);
 								paras.put(file.getFieldName(), processMultipartFile(file));

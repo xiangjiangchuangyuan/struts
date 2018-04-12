@@ -32,7 +32,6 @@ import com.xjcy.struts.wrapper.JSPCompile;
 public class StrutsContext {
 	private static final Logger logger = Logger.getLogger(StrutsContext.class);
 
-	public static final String CLASS_PATH = "WEB-INF/classes/";
 	private static final List<Class<?>> classlist = new ArrayList<>();
 	private static final List<String> jspList = new ArrayList<>();
 	private static final List<Class<?>> initList = new ArrayList<>();
