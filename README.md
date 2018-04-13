@@ -17,3 +17,8 @@
 
 ### WIKI
 https://github.com/xiangjiangchuangyuan/struts/wiki
+
+### 反馈
+* [提交issue](https://github.com/xiangjiangchuangyuan/struts/issues/new)
+* 交流群616698275 答案easy
+* email：441430565@qq.com
