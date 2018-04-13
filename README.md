@@ -1,6 +1,6 @@
 # struts
 
-## 框架特色
+### 框架特色
 * 0配置，无需任何配置文件，自动扫描所有类文件
 * 自动判断是否返回压缩后的JSON和文本
 * 根据[~]标记自动解析为根目录，不受类注解影响
@@ -14,3 +14,6 @@
 * 框架自动处理json转换，极速性能
 * 支持Linux环境下自动编译所有jsp文件  
 * 支持jsp文件修改后自动重新编译，无需重启服务
+
+### WIKI
+https://github.com/xiangjiangchuangyuan/struts/wiki

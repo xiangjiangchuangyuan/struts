@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import com.xjcy.struts.context.StrutsContext;
 import com.xjcy.struts.context.WebContextUtils;
+import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
 public class ContextLoader {
@@ -21,19 +22,13 @@ public class ContextLoader {
 	private final static StrutsContext context = new StrutsContext();
 	private ServletContext severtContext;
 
-	static final String STR_SUBFIX = ".class";
-	static final String STR_CLASS_PATH = "/WEB-INF/classes/";
-	static final String STR_SLASH = "/";
-	static final String STR_EMPTY = "";
-	static final String STR_DOT = ".";
-
 	public ContextLoader(ServletContext arg1) {
 		long start = System.currentTimeMillis();
 		try {
 			this.severtContext = arg1;
 			// 扫描所有文件
 			context.clear();
-			scanPaths(arg1, arg1.getResourcePaths(STR_SLASH));
+			scanPaths(arg1, arg1.getResourcePaths(STR.SLASH_LEFT));
 		} catch (Exception e) {
 			logger.error("Context load faild", e);
 		}
@@ -46,10 +41,10 @@ public class ContextLoader {
 	private void scanPaths(ServletContext arg1, Set<String> paths) {
 		if (paths != null) {
 			for (String path : paths) {
-				if (path.endsWith(STR_SLASH))
+				if (path.endsWith(STR.SLASH_LEFT))
 					scanPaths(arg1, arg1.getResourcePaths(path));
 				else {
-					if (path.endsWith(STR_SUBFIX)) {
+					if (path.endsWith(STR.SUBFIX_CLASS)) {
 						Class<?> cla = getClass(path);
 						if (cla != null && !cla.isInterface()) {
 							bindResource(cla);
@@ -64,7 +59,7 @@ public class ContextLoader {
 							context.addClass(cla);
 						}
 					}
-					else if(path.endsWith(".jsp") || path.endsWith(".jspx"))
+					else if(path.endsWith(STR.SUBFIX_JSP) || path.endsWith(STR.SUBFIX_JSPX))
 						context.addJsp(path);
 				}
 			}
@@ -72,9 +67,9 @@ public class ContextLoader {
 	}
 
 	private Class<?> getClass(String path) {
-		path = path.replace(STR_CLASS_PATH, STR_EMPTY);
-		path = path.replace(STR_SUBFIX, STR_EMPTY);
-		path = path.replace(STR_SLASH, STR_DOT);
+		path = path.replace(STR.WEB_CLASS_PATH, STR.EMPTY);
+		path = path.replace(STR.SUBFIX_CLASS, STR.EMPTY);
+		path = path.replace(STR.SLASH_LEFT, STR.DOT);
 		try {
 			return Class.forName(path);
 		} catch (ClassNotFoundException e) {
