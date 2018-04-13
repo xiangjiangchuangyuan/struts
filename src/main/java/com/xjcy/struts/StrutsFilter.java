@@ -76,7 +76,6 @@ public class StrutsFilter implements Filter
 				logger.debug("赋值PatternAction：" + servletPath);
 			}
 
-			Object resultObj;
 			try
 			{
 				if (!context.checkInterceptors(request, response))
@@ -87,7 +86,7 @@ public class StrutsFilter implements Filter
 				}
 				logger.debug("Find the action => " + action.toString());
 				ActionSupport as = (ActionSupport) context.getBean(action.getController());
-				resultObj = action.invoke(as, request, response);
+				Object resultObj = action.invoke(as, request, response);
 				if (resultObj != null)
 				{
 					responseWrapper.setReturnObj(action.getReturnType(), resultObj);
