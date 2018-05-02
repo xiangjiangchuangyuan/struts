@@ -7,8 +7,7 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.apache.log4j.Logger;
 
-public class CutStringTag extends BodyTagSupport
-{
+public class CutStringTag extends BodyTagSupport {
 	/**
 	 * 
 	 */
@@ -18,37 +17,29 @@ public class CutStringTag extends BodyTagSupport
 	private String str;
 	private int len;
 
-	public void setStr(String str)
-	{
+	public void setStr(String str) {
 		this.str = str;
 	}
-	
-	public void setLen(int len)
-	{
+
+	public void setLen(int len) {
 		this.len = len;
 	}
 
 	@Override
-	public int doStartTag() throws JspException
-	{
+	public int doStartTag() throws JspException {
 		return EVAL_BODY_BUFFERED;
 	}
 
 	@Override
-	public int doEndTag() throws JspException
-	{
-		if(str != null && str.length() > len)
-		{
+	public int doEndTag() throws JspException {
+		if (str != null && str.length() > len) {
 			str = str.substring(0, len);
-			// 输出到浏览器
-			try
-			{
-				this.pageContext.getOut().append(str);
-			}
-			catch (IOException e)
-			{
-				logger.error("输出substr标签失败", e);
-			}
+		}
+		// 输出到浏览器
+		try {
+			this.pageContext.getOut().append(str);
+		} catch (IOException e) {
+			logger.error("输出substr标签失败", e);
 		}
 		return EVAL_PAGE;
 	}
