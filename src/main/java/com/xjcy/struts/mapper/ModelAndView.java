@@ -1,7 +1,6 @@
 package com.xjcy.struts.mapper;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
 import com.xjcy.struts.wrapper.EachItem;
-import com.xjcy.util.StringUtils;
 
 /**
  * jsp的对象和跳转页面配置
@@ -26,6 +24,12 @@ public class ModelAndView
 
 	private final Map<String, Object> paras = new HashMap<>();
 	private String viewName;
+	
+	public static ModelAndView view(String viewName){
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName(viewName);
+		return mav;
+	}
 
 	public ModelAndView addObject(String key, Object obj)
 	{
@@ -33,24 +37,17 @@ public class ModelAndView
 		return this;
 	}
 
-	public ModelAndView addObject(String key, Object obj, String sizePara)
+	public <E> ModelAndView addObject(String key, List<E> obj, String sizePara)
 	{
 		paras.put(key, obj);
-		// 如果size的参数不为空
-		if (!StringUtils.isEmpty(sizePara))
-		{
-			if (obj == null)
-				addObject(sizePara, 0);
-			else
-			{
-				if (obj instanceof Map)
-					addObject(sizePara, ((Map<?, ?>) obj).size());
-				else if (obj instanceof Collection)
-					addObject(sizePara, ((Collection<?>) obj).size());
-				else
-					logger.debug("Unknown object => " + obj.getClass());
-			}
-		}
+		addObject(sizePara, (obj == null ? 0 : obj.size()));
+		return this;
+	}
+	
+	public <K, V> ModelAndView addObject(String key, Map<K, V> obj, String sizePara)
+	{
+		paras.put(key, obj);
+		addObject(sizePara, (obj == null ? 0 : obj.size()));
 		return this;
 	}
 

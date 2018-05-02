@@ -3,11 +3,12 @@ package com.xjcy.struts.wrapper;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+
+import com.xjcy.struts.cache.JSONCache;
 
 /**
  * map转换为JSON
@@ -27,7 +28,6 @@ public class JSONWrapper
 	//private static final String STR_ARRAY_RIGHT = "]";
 	private static final String STR_SLASH_OBJECT = "\":{";
 	private static final String STR_SLASH_ARRAY = "\":[";
-	private static final Map<String, Field[]> cacheFields = new HashMap<>();
 
 	public String write(Map<String, Object> jsonMap)
 	{
@@ -84,7 +84,7 @@ public class JSONWrapper
 		if (key == null)
 			json.append(STR_OBJECT_LEFT);
 		else json.append(STR_SLASH).append(key).append(STR_SLASH_OBJECT);
-		Field[] fields = getDeclaredFields(value);
+		Field[] fields = JSONCache.getDeclaredFields(value.getClass());
 		int num = 0;
 		Object obj2;
 		for (Field field : fields)
@@ -182,16 +182,6 @@ public class JSONWrapper
 		{
 			field.setAccessible(false);
 		}
-	}
-
-	private static synchronized Field[] getDeclaredFields(Object obj)
-	{
-		String cacheKey = obj.getClass().getName();
-		if (cacheFields.containsKey(cacheKey))
-			return cacheFields.get(cacheKey);
-		Field[] fields = obj.getClass().getDeclaredFields();
-		cacheFields.put(cacheKey, fields);
-		return fields;
 	}
 
 	/**

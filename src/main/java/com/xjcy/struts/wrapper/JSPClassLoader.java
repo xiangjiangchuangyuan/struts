@@ -13,6 +13,7 @@ public class JSPClassLoader extends ClassLoader
 	private static final Logger logger = Logger.getLogger(JSPClassLoader.class);
 
 	private File classFile;
+	byte[] classData;
 
 	public JSPClassLoader(File file, ClassLoader parent)
 	{
@@ -30,16 +31,15 @@ public class JSPClassLoader extends ClassLoader
 		{
 			InputStream input = new FileInputStream(classFile);
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			int data = input.read();
-
-			while (data != -1)
-			{
-				buffer.write(data);
-				data = input.read();
-			}
+			
+			byte[] tmp = new byte[128];  
+	        int read = 0;  
+	        while ((read = input.read(tmp)) != -1) {  
+	            buffer.write(tmp, 0, read);  
+	        }  
 			input.close();
-			byte[] classData = buffer.toByteArray();
-
+			
+			classData = buffer.toByteArray();
 			buffer.close();
 			return defineClass(name, classData, 0, classData.length);
 		}
@@ -52,13 +52,7 @@ public class JSPClassLoader extends ClassLoader
 
 	public void close()
 	{
-		try
-		{
-			super.finalize();
-		}
-		catch (Throwable e)
-		{
-			logger.error("finalize faild", e);
-		}
+		classFile = null;
+		classData = null;
 	}
 }

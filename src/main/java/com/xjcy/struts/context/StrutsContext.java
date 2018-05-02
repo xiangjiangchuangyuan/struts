@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
-import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +24,7 @@ import org.apache.log4j.Logger;
 import com.xjcy.struts.ActionInterceptor;
 import com.xjcy.struts.StrutsInit;
 import com.xjcy.struts.annotation.Order;
+import com.xjcy.struts.cache.FieldCache;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.mapper.SpringBean;
 import com.xjcy.struts.wrapper.JSPCompile;
@@ -125,8 +125,8 @@ public class StrutsContext {
 		interceptors.clear();
 		actionMap.clear();
 		jspList.clear();
-		
-		//清除解析好的Action和Bean
+
+		// 清除解析好的Action和Bean
 		actionMap.clear();
 		patternActionMap.clear();
 		springMap.clear();
@@ -227,18 +227,16 @@ public class StrutsContext {
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		if (obj == null)
 			return;
-		Field[] fields = obj.getClass().getDeclaredFields();
-		for (Field field : fields) {
-			if (field.getAnnotation(Resource.class) != null && findBean(field)) {
+		List<Field> fieldList = FieldCache.getResourceFields(obj.getClass());
+		SpringBean bean;
+		for (Field field : fieldList) {
+			bean = springMap.get(field);
+			if (bean != null) {
 				field.setAccessible(true);
-				field.set(obj, getBean(springMap.get(field).getBeanClass()));
+				field.set(obj, getBean(bean.getBeanClass()));
 				field.setAccessible(false);
 			}
 		}
-	}
-
-	private static boolean findBean(Field key) {
-		return springMap.containsKey(key);
 	}
 
 	public int actionSize() {
