@@ -18,7 +18,7 @@ public class CutStringTag extends BodyTagSupport
 	private String str;
 	private int len;
 
-	public void setTest(String str)
+	public void setStr(String str)
 	{
 		this.str = str;
 	}
