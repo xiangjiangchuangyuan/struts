@@ -24,8 +24,7 @@ import com.xjcy.util.StringUtils;
 public class StrutsFilter implements Filter
 {
 	private static final Logger logger = Logger.getLogger(StrutsFilter.class);
-	private static String basePath;
-	private static String serverName;
+	private String basePath;
 	private StrutsContext context;
 	private ResponseWrapper responseWrapper;
 
@@ -35,7 +34,6 @@ public class StrutsFilter implements Filter
 		context.clear();
 		responseWrapper = null;
 		basePath = null;
-		serverName = null;
 		context = null;
 		if (logger.isDebugEnabled())
 			logger.debug("destroy context");
@@ -61,12 +59,15 @@ public class StrutsFilter implements Filter
 		else
 		{
 			HttpServletResponse response = (HttpServletResponse) arg1;
-			String key = servletPath + "_" + request.getQueryString();
-			if (action.getRedisCache() && RedisUtils.exists(key))
+			//需要缓存
+			if (action.getRedisCache()) 
 			{
-				String json = RedisUtils.get(key);
-				responseWrapper.doResponse(request, response, json);
-				return;
+				String key = servletPath + "_" + request.getQueryString();
+				if (RedisUtils.exists(key)) {
+					String json = RedisUtils.get(key);
+					responseWrapper.doResponse(request, response, json);
+					return;
+				}
 			}
 			// 添加主目录属性
 			request.setAttribute("basePath", getBasePath(request));
@@ -101,15 +102,15 @@ public class StrutsFilter implements Filter
 		}
 	}
 
-	private static Object getBasePath(HttpServletRequest request)
-	{
-		String server = request.getServerName();
-		if (StringUtils.isEmpty(basePath) || !server.equals(serverName))
-		{
-			serverName = server;
-			String path = "/ROOT".equals(request.getContextPath()) ? "" : request.getContextPath();
-			String port = (request.getServerPort() == 80 ? "" : ":" + request.getServerPort());
-			basePath = request.getScheme() + "://" + server + port + path + "/";
+	private String getBasePath(HttpServletRequest request) {
+		if (StringUtils.isEmpty(basePath)) {
+			if (WebContextUtils.isLinuxOS())
+				basePath = "/";
+			else {
+				int port = request.getServerPort();
+				basePath = request.getScheme() + "://" + request.getServerName() + (port == 80 ? "" : ":" + port)
+						+ request.getContextPath() + "/";
+			}
 		}
 		return basePath;
 	}
