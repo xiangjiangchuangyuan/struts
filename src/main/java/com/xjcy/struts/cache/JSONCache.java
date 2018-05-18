@@ -4,6 +4,11 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 缓存bean的字段
+ * @author YYDF
+ * 2018-05-18
+ */
 public class JSONCache {
 	private static final Map<Class<?>, Field[]> cacheFields = new HashMap<>();
 

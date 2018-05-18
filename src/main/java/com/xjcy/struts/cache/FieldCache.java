@@ -8,6 +8,11 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+/**
+ * 缓存Controller中的Resource注解类
+ * @author YYDF
+ * 2018-05-18
+ */
 public class FieldCache {
 	private static final Map<Class<?>, List<Field>> fields = new HashMap<>();
 
