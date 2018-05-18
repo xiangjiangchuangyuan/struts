@@ -210,7 +210,7 @@ public class StrutsContext {
 		return true;
 	}
 
-	public Object getBean(Class<?> controller) {
+	public synchronized Object getBean(Class<?> controller) {
 		try {
 			Object obj = controller.newInstance();
 			annotationInject(obj);

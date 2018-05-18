@@ -30,7 +30,7 @@ public abstract class ActionSupport {
 	private boolean isMultipartRequest = false;
 	private final Map<String, String> paras = new HashMap<>();
 	private final Map<String, MultipartFile> multipartFiles = new HashMap<>();
-
+	
 	protected HttpServletRequest getRequest() {
 		return httpServletRequest;
 	}
@@ -61,6 +61,13 @@ public abstract class ActionSupport {
 		if (STR.VAL_UNDEFINED.equals(str) || STR.VAL_NULL.equals(str))
 			return null;
 		return str;
+	}
+	
+	protected Integer getParaAsInt(String arg0) {
+		String str = getParameter(arg0);
+		if(StringUtils.isNotBlank(str))
+			return Integer.parseInt(str);
+		return null;
 	}
 
 	protected MultipartFile getMultipartFile(String arg0) {
