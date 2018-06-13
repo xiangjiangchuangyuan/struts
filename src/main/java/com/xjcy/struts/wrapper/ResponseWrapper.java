@@ -24,6 +24,9 @@ import com.xjcy.util.StringUtils;
 public class ResponseWrapper {
 	private static final Logger logger = Logger.getLogger(ResponseWrapper.class);
 
+	private static final int minCompress = 256; // 最小压缩值
+	private static final int maxPrintLog = 4096; // 最大日志打印
+	
 	private final JSPWrapper jspWrapper;
 	private Class<?> returnType;
 	private Object resultObj;
@@ -102,6 +105,8 @@ public class ResponseWrapper {
 		}
 		writeResponse(response, request, json);
 		if (logger.isDebugEnabled()) {
+			if (json.length() > maxPrintLog)
+				json = json.substring(0, maxPrintLog) + "...";
 			if (isEmpty)
 				logger.debug("[JSON]" + json);
 			else
@@ -116,7 +121,7 @@ public class ResponseWrapper {
 		response.setHeader(STR.HEADER_PRAGMA, "no-cache");
 		response.setHeader(STR.HEADER_CACHE_CONTROL, "no-cache");
 		response.setHeader(STR.HEADER_EXPIRES, "no-cache");
-		if (WebContextUtils.isGZipEncoding(request) && len > 256) {
+		if (WebContextUtils.isGZipEncoding(request) && len > minCompress) {
 			byte[] data = ObjectUtils.string2Byte(text, STR.ENCODING_UTF8);
 			if (data == null)
 				throw new ServletException("Response data can not be null");
