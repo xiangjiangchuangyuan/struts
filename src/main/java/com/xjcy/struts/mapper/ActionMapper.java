@@ -27,54 +27,44 @@ public class ActionMapper
 	private static final Logger logger = Logger.getLogger(ActionMapper.class);
 
 	private final Method actionMethod;
-	private final Class<?> controller;
 	private final Class<?> returnType;
 	private final List<String> paras;
 	private final Map<String, String> paraValues = new HashMap<>();
 	private final boolean redisCache;
 	private final int cacheSeconds;
+	private ActionSupport cacheBean;
 
-	public ActionMapper(Method method, Class<?> cla)
+	public ActionMapper(Method method)
 	{
-		this(method, cla, null);
+		this(method, null);
 	}
 
-	public ActionMapper(Method method, Class<?> cla, List<String> paras)
-	{
+	public ActionMapper(Method method, List<String> paras) {
 		this.actionMethod = method;
 		this.cacheSeconds = WebContextUtils.getRedisCache(method);
 		this.redisCache = cacheSeconds > 0;
-		this.controller = cla;
 		this.returnType = method.getReturnType();
 		this.paras = paras;
 	}
 
-	public Object invoke(ActionSupport as, HttpServletRequest request, HttpServletResponse response)
+	public ActionSupport getBean() {
+		return this.cacheBean;
+	}
+
+	public Object invoke(HttpServletRequest request, HttpServletResponse response)
 	{
 		Object resultObj = null;
 		try
 		{
-			as.setRequest(request);
-			as.setResponse(response);
-			resultObj = actionMethod.invoke(as);
+			this.cacheBean.setRequest(request);
+			this.cacheBean.setResponse(response);
+			resultObj = actionMethod.invoke(this.cacheBean);
 		}
 		catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
 			logger.error("Action call " + actionMethod.getName() + " faild", e);
 		}
 		return resultObj;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "[method=" + actionMethod.getName() + ", controller=" + controller.getSimpleName() + ", return="
-				+ returnType.getSimpleName() + "]";
-	}
-
-	public Class<?> getController()
-	{
-		return this.controller;
 	}
 
 	public boolean isPatternAction()
@@ -115,5 +105,17 @@ public class ActionMapper
 	public int getCacheSeconds()
 	{
 		return this.cacheSeconds;
+	}
+
+	public String getName() {
+		return actionMethod.getName();
+	}
+
+	public Class<?> getController() {
+		return actionMethod.getDeclaringClass();
+	}
+
+	public void cacheBean(Object bean) {
+		this.cacheBean = (ActionSupport) bean;
 	}
 }

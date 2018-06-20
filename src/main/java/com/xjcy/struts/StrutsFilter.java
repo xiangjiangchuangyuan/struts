@@ -1,6 +1,7 @@
 package com.xjcy.struts;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -41,8 +42,7 @@ public class StrutsFilter implements Filter
 
 	@Override
 	public void doFilter(ServletRequest arg0, ServletResponse arg1, FilterChain arg2)
-			throws IOException, ServletException
-	{
+			throws IOException, ServletException {
 		// 设置编码
 		arg0.setCharacterEncoding(STR.ENCODING_UTF8);
 		arg1.setCharacterEncoding(STR.ENCODING_UTF8);
@@ -51,17 +51,13 @@ public class StrutsFilter implements Filter
 		if (logger.isDebugEnabled())
 			logger.debug("Filter => " + servletPath);
 		ActionMapper action = this.context.getAction(servletPath);
-		if (action == null)
-		{
+		if (action == null) {
 			logger.error("The action of '" + servletPath + "' not found");
 			arg2.doFilter(arg0, arg1);
-		}
-		else
-		{
+		} else {
 			HttpServletResponse response = (HttpServletResponse) arg1;
-			//需要缓存
-			if (action.getRedisCache()) 
-			{
+			// 需要缓存
+			if (action.getRedisCache()) {
 				String key = servletPath + "_" + request.getQueryString();
 				if (RedisUtils.exists(key)) {
 					String json = RedisUtils.get(key);
@@ -71,33 +67,26 @@ public class StrutsFilter implements Filter
 			}
 			// 添加主目录属性
 			request.setAttribute("basePath", getBasePath(request));
-			if (action.isPatternAction())
-			{
+			if (action.isPatternAction()) {
 				action.fillRequest(request);
 				logger.debug("赋值PatternAction：" + servletPath);
 			}
 
-			try
-			{
-				if (!context.checkInterceptors(request, response))
-				{
+			try {
+				if (!context.checkInterceptors(request, response)) {
 					if (logger.isDebugEnabled())
 						logger.debug("Action is blocked by Interceptor");
 					return;
 				}
-				logger.debug("Find the action => " + action.toString());
-				ActionSupport as = (ActionSupport) context.getBean(action.getController());
-				Object resultObj = action.invoke(as, request, response);
-				if (resultObj != null)
-				{
+				logger.debug("Find the action => " + action.getName());
+				Object resultObj = action.invoke(request, response);
+				if (resultObj != null) {
 					responseWrapper.setReturnObj(action.getReturnType(), resultObj);
 					responseWrapper.setCache(action.getRedisCache(), action.getCacheSeconds());
 					responseWrapper.doResponse(request, response);
 				}
-			}
-			catch (IllegalArgumentException e)
-			{
-				logger.error("执行 action '" + action.getController().getName() + "' 失败", e);
+			} catch (IllegalArgumentException e) {
+				logger.error("执行 action '" + action.getName() + "' 失败", e);
 			}
 		}
 	}
@@ -116,12 +105,17 @@ public class StrutsFilter implements Filter
 	}
 
 	@Override
-	public void init(FilterConfig arg0) throws ServletException
-	{
+	public void init(FilterConfig arg0) throws ServletException {
 		context = WebContextUtils.getWebApplicationContext(arg0.getServletContext());
-		if (logger.isDebugEnabled())
+		List<Class<?>> controllers = context.getControllers();
+		for (Class<?> cla : controllers) {
+			context.initBean(cla);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug(controllers.size() + " beans have been created");
 			logger.debug("Find actions " + context.actionSize() + " beans " + context.beanSize() + " interceptors "
 					+ context.interceptorSize());
+		}
 		responseWrapper = new ResponseWrapper(arg0.getServletContext());
 	}
 

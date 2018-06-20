@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Resource;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
@@ -24,7 +25,6 @@ import org.apache.log4j.Logger;
 import com.xjcy.struts.ActionInterceptor;
 import com.xjcy.struts.StrutsInit;
 import com.xjcy.struts.annotation.Order;
-import com.xjcy.struts.cache.FieldCache;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.mapper.SpringBean;
 import com.xjcy.struts.wrapper.JSPCompile;
@@ -33,6 +33,7 @@ public class StrutsContext {
 	private static final Logger logger = Logger.getLogger(StrutsContext.class);
 
 	private static final List<Class<?>> classlist = new ArrayList<>();
+	private static final List<Class<?>> controllerlist = new ArrayList<>();
 	private static final List<String> jspList = new ArrayList<>();
 	private static final List<Class<?>> initList = new ArrayList<>();
 	private static final List<StrutsInit> startedInit = new ArrayList<>();
@@ -43,11 +44,12 @@ public class StrutsContext {
 	private static final Map<Field, SpringBean> springMap = new HashMap<>();
 
 	public void startup(ServletContext sc) {
-		if (actionMap.size() > 0) {
-			mappingAction(sc);
-		}
+		// 查找@Resource的实现类
 		if (resourceList.size() > 0) {
 			findResource();
+		}
+		if (actionMap.size() > 0) {
+			mappingAction(sc);
 		}
 		if (interceptors.size() > 1) {
 			sortInterceptor();
@@ -125,6 +127,7 @@ public class StrutsContext {
 		interceptors.clear();
 		actionMap.clear();
 		jspList.clear();
+		controllerlist.clear();
 
 		// 清除解析好的Action和Bean
 		actionMap.clear();
@@ -162,13 +165,17 @@ public class StrutsContext {
 	}
 
 	public void addAction(String action, Method method, Class<?> cla) {
-		ActionMapper actionMapper = actionMap.put(action, new ActionMapper(method, cla));
+		if(!controllerlist.contains(cla))
+			controllerlist.add(cla);
+		ActionMapper actionMapper = actionMap.put(action, new ActionMapper(method));
 		if (actionMapper != null)
 			logger.error("Action " + action + " exist, override with " + method.getName());
 	}
 
 	public void addAction(String pattern, Method method, Class<?> cla, List<String> paras) {
-		ActionMapper actionMapper = patternActionMap.put(pattern, new ActionMapper(method, cla, paras));
+		if(!controllerlist.contains(cla))
+			controllerlist.add(cla);
+		ActionMapper actionMapper = patternActionMap.put(pattern, new ActionMapper(method, paras));
 		if (actionMapper != null)
 			logger.error("Action pattern " + pattern + " exist, override with " + method.getName());
 	}
@@ -210,12 +217,10 @@ public class StrutsContext {
 		return true;
 	}
 
-	public synchronized Object getBean(Class<?> controller) {
+	private synchronized Object getBean(Class<?> controller) {
 		try {
 			Object obj = controller.newInstance();
 			annotationInject(obj);
-			if (logger.isDebugEnabled())
-				logger.debug("Finished creating instance of bean '" + controller.getSimpleName() + "'");
 			return obj;
 		} catch (InstantiationException | IllegalAccessException e) {
 			logger.error("Create '" + controller.getName() + "' bean faild", e);
@@ -227,14 +232,16 @@ public class StrutsContext {
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		if (obj == null)
 			return;
-		List<Field> fieldList = FieldCache.getResourceFields(obj.getClass());
+		Field[] fieldArr = obj.getClass().getDeclaredFields();
 		SpringBean bean;
-		for (Field field : fieldList) {
-			bean = springMap.get(field);
-			if (bean != null) {
-				field.setAccessible(true);
-				field.set(obj, getBean(bean.getBeanClass()));
-				field.setAccessible(false);
+		for (Field field : fieldArr) {
+			if (field.getAnnotation(Resource.class) != null) {
+				bean = springMap.get(field);
+				if (bean != null) {
+					field.setAccessible(true);
+					field.set(obj, getBean(bean.getBeanClass()));
+					field.setAccessible(false);
+				}
 			}
 		}
 	}
@@ -249,5 +256,21 @@ public class StrutsContext {
 
 	public int interceptorSize() {
 		return interceptors.size();
+	}
+
+	public List<Class<?>> getControllers() {
+		return controllerlist;
+	}
+
+	public void initBean(Class<?> cla) {
+		Object bean = getBean(cla);
+		for (ActionMapper action : actionMap.values()) {
+			if (action.getController().equals(cla))
+				action.cacheBean(bean);
+		}
+		for (ActionMapper action : patternActionMap.values()) {
+			if (action.getController().equals(cla))
+				action.cacheBean(cla);
+		}
 	}
 }
