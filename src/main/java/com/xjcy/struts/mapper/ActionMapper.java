@@ -1,6 +1,5 @@
 package com.xjcy.struts.mapper;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.HashMap;
@@ -51,18 +50,17 @@ public class ActionMapper
 		return this.cacheBean;
 	}
 
-	public Object invoke(HttpServletRequest request, HttpServletResponse response)
-	{
+	public Object invoke(HttpServletRequest request, HttpServletResponse response) {
 		Object resultObj = null;
-		try
-		{
+		try {
 			this.cacheBean.setRequest(request);
 			this.cacheBean.setResponse(response);
 			resultObj = actionMethod.invoke(this.cacheBean);
-		}
-		catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-		{
+		} catch (Exception e) {
 			logger.error("Action call " + actionMethod.getName() + " faild", e);
+		} finally {
+			this.cacheBean.destory();
+			logger.debug("The action has been destroyed");
 		}
 		return resultObj;
 	}

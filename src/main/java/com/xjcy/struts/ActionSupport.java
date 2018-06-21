@@ -124,7 +124,7 @@ public abstract class ActionSupport {
 			if (wrapper.isMultipartRequest()) {
 				this.isMultipartRequest = true;
 				if (logger.isDebugEnabled())
-					logger.debug("Request is multipart");
+					logger.debug("The request is multipart/form-data");
 				try {
 					FileItemIterator files = wrapper.processRequest(request);
 					if (files != null) {
@@ -151,5 +151,15 @@ public abstract class ActionSupport {
 
 	public void setResponse(HttpServletResponse response) {
 		this.httpServletResponse = response;
+	}
+	
+	public void destory() {
+		if (httpServletRequest != null)
+			this.httpServletRequest = null;
+		if (httpServletResponse != null)
+			this.httpServletResponse = null;
+		this.isMultipartRequest = false;
+		this.paras.clear();
+		this.multipartFiles.clear();
 	}
 }
