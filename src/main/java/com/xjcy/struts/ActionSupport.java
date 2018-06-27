@@ -30,7 +30,7 @@ public abstract class ActionSupport {
 	private boolean isMultipartRequest = false;
 	private final Map<String, String> paras = new HashMap<>();
 	private final Map<String, MultipartFile> multipartFiles = new HashMap<>();
-	
+
 	protected HttpServletRequest getRequest() {
 		return httpServletRequest;
 	}
@@ -58,14 +58,14 @@ public abstract class ActionSupport {
 				str = (obj != null) ? obj.toString() : null;
 			}
 		}
-		if (STR.VAL_UNDEFINED.equals(str) || STR.VAL_NULL.equals(str))
+		if (STR.VAL_UNDEFINED.equals(str) || STR.VAL_NULL.equals(str) || STR.VAL_NAN.equals(str))
 			return null;
 		return str;
 	}
-	
+
 	protected Integer getParaAsInt(String arg0) {
 		String str = getParameter(arg0);
-		if(StringUtils.isNotBlank(str))
+		if (StringUtils.isNotBlank(str))
 			return Integer.parseInt(str);
 		return null;
 	}
@@ -131,7 +131,8 @@ public abstract class ActionSupport {
 						while (files.hasNext()) {
 							FileItemStream stream = files.next();
 							if (stream.isFormField())
-								paras.put(stream.getFieldName(), Streams.asString(stream.openStream(), STR.ENCODING_UTF8));
+								paras.put(stream.getFieldName(),
+										Streams.asString(stream.openStream(), STR.ENCODING_UTF8));
 							else {
 								MultipartFile file = new MultipartFile(stream);
 								paras.put(file.getFieldName(), processMultipartFile(file));
@@ -152,7 +153,7 @@ public abstract class ActionSupport {
 	public void setResponse(HttpServletResponse response) {
 		this.httpServletResponse = response;
 	}
-	
+
 	public void destory() {
 		if (httpServletRequest != null)
 			this.httpServletRequest = null;
