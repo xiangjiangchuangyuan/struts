@@ -4,23 +4,34 @@ import java.lang.reflect.Field;
 
 public class SpringBean
 {
-	private Class<?> beanClass;
-	private Field beanField;
+	private Field field;
+	private Class<?> target;
 
-	public SpringBean(Class<?> cla, Field field)
-	{
-		this.beanField = field;
-		this.beanClass = cla;
+	public SpringBean(Field field) {
+		this.field = field;
 	}
 
-	public Class<?> getBeanClass()
-	{
-		return this.beanClass;
+	public boolean isTarget(Class<?> cla) {
+		return field.getType().isAssignableFrom(cla);
 	}
 
-	public Field getBeanField()
-	{
-		return this.beanField;
+	public void setTargetClass(Class<?> cla) {
+		this.target = cla;
+	}
+
+	public Class<?> getTargetClass() {
+		return this.target;
+	}
+
+	public void setTargetValue(Object obj, Object bean) {
+		try {
+			field.setAccessible(true);
+			field.set(obj, bean);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		} finally {
+			field.setAccessible(false);
+		}
 	}
 
 }

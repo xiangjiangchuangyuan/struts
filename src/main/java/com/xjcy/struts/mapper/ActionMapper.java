@@ -1,5 +1,6 @@
 package com.xjcy.struts.mapper;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.HashMap;
@@ -7,13 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
 import com.xjcy.struts.ActionSupport;
+import com.xjcy.struts.context.StrutsContext;
 import com.xjcy.struts.context.WebContextUtils;
+import com.xjcy.struts.wrapper.ResponseWrapper;
 
 /**
  * Action处理类
@@ -21,99 +25,90 @@ import com.xjcy.struts.context.WebContextUtils;
  * @author YYDF
  *
  */
-public class ActionMapper
-{
+public class ActionMapper {
 	private static final Logger logger = Logger.getLogger(ActionMapper.class);
 
 	private final Method actionMethod;
-	private final Class<?> returnType;
-	private final List<String> paras;
-	private final Map<String, String> paraValues = new HashMap<>();
-	private final boolean redisCache;
-	private final int cacheSeconds;
-	private ActionSupport cacheBean;
+	private List<String> paras;
+	private Map<String, String> paraValues;
+	private Class<?> declaringClass;
+	private Class<?>[] parameterTypes;
+	private int length;
 
-	public ActionMapper(Method method)
-	{
+	public ActionMapper(Method method) {
 		this(method, null);
 	}
 
 	public ActionMapper(Method method, List<String> paras) {
 		this.actionMethod = method;
-		this.cacheSeconds = WebContextUtils.getRedisCache(method);
-		this.redisCache = cacheSeconds > 0;
-		this.returnType = method.getReturnType();
-		this.paras = paras;
-	}
-
-	public ActionSupport getBean() {
-		return this.cacheBean;
-	}
-
-	public Object invoke(HttpServletRequest request, HttpServletResponse response) {
-		Object resultObj = null;
-		try {
-			this.cacheBean.setRequest(request);
-			this.cacheBean.setResponse(response);
-			resultObj = actionMethod.invoke(this.cacheBean);
-		} catch (Exception e) {
-			logger.error("Action call " + actionMethod.getName() + " faild", e);
-		} finally {
-			this.cacheBean.destory();
-			logger.debug("The action has been destroyed");
+		this.declaringClass = method.getDeclaringClass();
+		this.parameterTypes = method.getParameterTypes();
+		this.length = this.parameterTypes.length;
+		if (paras != null) {
+			this.paras = paras;
+			this.paraValues = new HashMap<>(paras.size());
 		}
-		return resultObj;
 	}
 
-	public boolean isPatternAction()
-	{
-		return this.paras != null;
+	public void invoke(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		// 添加主目录属性
+		request.setAttribute("basePath", WebContextUtils.getBasePath(request));
+		if (this.paras != null) {
+			fillRequest(request);
+			logger.debug("赋值PatternAction");
+		}
+
+		ActionSupport action = null;
+		try {
+			action = (ActionSupport) StrutsContext.getBean(this.declaringClass);
+			action.setRequest(request);
+			action.setResponse(response);
+			Object resultObj;
+			if (this.length > 0) {
+				resultObj = actionMethod.invoke(action, buildArgs(request, response));
+			} else
+				resultObj = actionMethod.invoke(action);
+			if (resultObj != null) {
+				new ResponseWrapper(request, response).doResponse(resultObj);
+			}
+		} catch (Exception e) {
+			logger.error("Action call " + this.declaringClass.getName() + "." + actionMethod.getName() + " faild", e);
+		} finally {
+			if (action != null) {
+				action.destory();
+				logger.debug("The action has been destroyed");
+			}
+		}
 	}
 
-	public void setParasValue(Matcher match)
-	{
+	private Object[] buildArgs(HttpServletRequest request, HttpServletResponse response) {
+		Object[] objArray = new Object[this.length];
+		for (int i = 0; i < this.length; i++) {
+			if (this.parameterTypes[i].toString().equals("interface javax.servlet.http.HttpSession")) {
+				objArray[i] = request.getSession();
+			} else if (this.parameterTypes[i].toString().equals("interface javax.servlet.http.HttpServletRequest")) {
+				objArray[i] = request;
+			} else if (this.parameterTypes[i].toString().equals("interface javax.servlet.http.HttpServletResponse")) {
+				objArray[i] = response;
+			}
+		}
+		return objArray;
+	}
+
+	public void setParasValue(Matcher match) {
 		paraValues.clear();
 		int num = 1;
-		for (String para : paras)
-		{
+		for (String para : paras) {
 			paraValues.put(para, match.group(num));
 			num++;
 		}
 	}
 
-	public Class<?> getReturnType()
-	{
-		return this.returnType;
-	}
-
-	public void fillRequest(HttpServletRequest request)
-	{
+	private void fillRequest(HttpServletRequest request) {
 		Set<String> keys = paraValues.keySet();
-		for (String key : keys)
-		{
+		for (String key : keys) {
 			request.setAttribute(key, paraValues.get(key));
 		}
 	}
 
-	public boolean getRedisCache()
-	{
-		return this.redisCache;
-	}
-	
-	public int getCacheSeconds()
-	{
-		return this.cacheSeconds;
-	}
-
-	public String getName() {
-		return actionMethod.getName();
-	}
-
-	public Class<?> getController() {
-		return actionMethod.getDeclaringClass();
-	}
-
-	public void cacheBean(Object bean) {
-		this.cacheBean = (ActionSupport) bean;
-	}
 }

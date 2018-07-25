@@ -28,28 +28,119 @@ import com.xjcy.struts.annotation.Order;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.mapper.SpringBean;
 import com.xjcy.struts.wrapper.JSPCompile;
+import com.xjcy.util.STR;
+import com.xjcy.util.StringUtils;
 
 public class StrutsContext {
 	private static final Logger logger = Logger.getLogger(StrutsContext.class);
 
 	private static final List<Class<?>> classlist = new ArrayList<>();
-	private static final List<Class<?>> controllerlist = new ArrayList<>();
 	private static final List<String> jspList = new ArrayList<>();
-	private static final List<Class<?>> initList = new ArrayList<>();
-	private static final List<StrutsInit> startedInit = new ArrayList<>();
-	private static final List<Field> resourceList = new ArrayList<>();
+	private static final List<StrutsInit> initList = new ArrayList<>();
 	private static final List<Class<?>> interceptors = new ArrayList<>();
 	private static final Map<String, ActionMapper> actionMap = new HashMap<>();
 	private static final Map<String, ActionMapper> patternActionMap = new HashMap<>();
-	private static final Map<Field, SpringBean> springMap = new HashMap<>();
+	private static final Map<Class<?>, List<SpringBean>> springMap = new HashMap<>();
+
+	public StrutsContext(ServletContext servlet) {
+		scanPaths(servlet, servlet.getResourcePaths(STR.SLASH_LEFT));
+		startup(servlet);
+	}
+
+	private void scanPaths(ServletContext arg1, Set<String> paths) {
+		if (paths != null) {
+			for (String path : paths) {
+				if (path.endsWith(STR.SLASH_LEFT))
+					scanPaths(arg1, arg1.getResourcePaths(path));
+				else {
+					if (path.endsWith(STR.SUBFIX_CLASS)) {
+						Class<?> cla = getClass(path);
+						if (cla != null && !cla.isInterface()) {
+							bindResource(cla);
+							// 如果继承了ActionSupport，则添加到集合中去
+							if (WebContextUtils.isAction(cla))
+								bindAction(cla);
+							else if (WebContextUtils.isInterceptor(cla))
+								addInterceptor(cla);
+							else if (WebContextUtils.isStrutsInit(cla))
+								addInit(cla);
+							// 将class放入集合
+							addClass(cla);
+						}
+					} else if (path.endsWith(STR.SUBFIX_JSP) || path.endsWith(STR.SUBFIX_JSPX))
+						addJsp(path);
+				}
+			}
+		}
+	}
+
+	private static Class<?> getClass(String path) {
+		path = path.replace(STR.WEB_CLASS_PATH, STR.EMPTY);
+		path = path.replace(STR.SUBFIX_CLASS, STR.EMPTY);
+		path = path.replace(STR.SLASH_LEFT, STR.DOT);
+		try {
+			return Class.forName(path);
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+	}
+
+	private void bindResource(Class<?> cla) {
+		Field[] fields = cla.getDeclaredFields();
+		for (Field field : fields) {
+			if (field.getAnnotation(Resource.class) != null) {
+				if (springMap.containsKey(cla))
+					springMap.get(cla).add(new SpringBean(field));
+				else{
+					List<SpringBean> beans = new ArrayList<>();
+					beans.add(new SpringBean(field));
+					springMap.put(cla, beans);
+				}
+			}
+		}
+	}
+
+	private void bindAction(Class<?> cla) {
+		String pkg = WebContextUtils.getMappingPath(cla);
+		Method[] methods = cla.getMethods();
+		String action;
+		for (Method method : methods) {
+			// 获取request路径
+			action = WebContextUtils.getMappingPath(pkg, method);
+			if (!StringUtils.isEmpty(action)) {
+				if (action.contains("{") && action.contains("}")) {
+					List<String> paras = new ArrayList<>();
+					int start = 0;
+					String para;
+					String pattern = action;
+					while (true) {
+						para = getParameter(action, start);
+						if (para == null)
+							break;
+						start += para.length();
+						paras.add(para.replace("{", "").replace("}", ""));
+						pattern = pattern.replace(para, "(.*)");
+					}
+					addAction(pattern, method, cla, paras);
+				} else
+					addAction(action, method, cla);
+			}
+		}
+	}
+
+	private static String getParameter(String action, int start) {
+		int begin = action.indexOf("{", start);
+		if (begin == -1)
+			return null;
+		int end = action.indexOf("}", begin) + 1;
+		return action.substring(begin, end);
+	}
 
 	public void startup(ServletContext sc) {
 		// 查找@Resource的实现类
-		if (resourceList.size() > 0) {
-			findResource();
-		}
+		findResource();
 		if (actionMap.size() > 0) {
-			mappingAction(sc);
+			mappingAction(sc.getFilterRegistration("StrutsFilter"));
 		}
 		if (interceptors.size() > 1) {
 			sortInterceptor();
@@ -64,15 +155,12 @@ public class StrutsContext {
 	}
 
 	private void startInit(ServletContext sc) {
-		try {
-			StrutsInit init;
-			for (Class<?> cla : initList) {
-				init = (StrutsInit) cla.newInstance();
+		for (StrutsInit init : initList) {
+			try {
 				init.init(sc);
-				startedInit.add(init);
+			} catch (Exception e) {
+				logger.error("The " + init.getClass() + " init faild", e);
 			}
-		} catch (Exception e) {
-			logger.error("Struts init faild", e);
 		}
 	}
 
@@ -94,18 +182,23 @@ public class StrutsContext {
 	}
 
 	private void findResource() {
-		for (Field field : resourceList) {
-			for (Class<?> cla : classlist) {
-				if (field.getType().isAssignableFrom(cla)) {
-					springMap.put(field, new SpringBean(cla, field));
-					break;
+		Set<Class<?>> list = springMap.keySet();
+		List<SpringBean> beanList;
+		for (Class<?> cla : list) {
+			beanList = springMap.get(cla);
+			for (SpringBean bean : beanList) {
+				for (int i = 0; i < classlist.size(); i++) {
+					if (bean.isTarget(classlist.get(i))) {
+						bean.setTargetClass(classlist.get(i));
+						break;
+					}
 				}
 			}
 		}
+		classlist.clear();
 	}
 
-	private void mappingAction(ServletContext sc) {
-		FilterRegistration filter = (FilterRegistration) sc.getAttribute("StrutsFilter");
+	private void mappingAction(FilterRegistration filterRegistration) {
 		EnumSet<DispatcherType> dispatcherTypes = EnumSet.allOf(DispatcherType.class);
 		dispatcherTypes.add(DispatcherType.REQUEST);
 		dispatcherTypes.add(DispatcherType.FORWARD);
@@ -113,37 +206,31 @@ public class StrutsContext {
 		if (patternActionMap.isEmpty()) {
 			Set<String> actions = actionMap.keySet();
 			for (String action : actions) {
-				filter.addMappingForUrlPatterns(dispatcherTypes, true, action);
+				filterRegistration.addMappingForUrlPatterns(dispatcherTypes, true, action);
 			}
 		} else {
-			filter.addMappingForUrlPatterns(dispatcherTypes, true, "/*");
+			filterRegistration.addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 		}
 	}
 
-	public void clear() {
+	public void destory() {
 		classlist.clear();
 		initList.clear();
-		resourceList.clear();
 		interceptors.clear();
 		actionMap.clear();
 		jspList.clear();
-		controllerlist.clear();
 
 		// 清除解析好的Action和Bean
 		actionMap.clear();
 		patternActionMap.clear();
 		springMap.clear();
-	}
-
-	public void destory() {
-		clear();
-		if (startedInit.size() > 0) {
-			try {
-				for (StrutsInit init : startedInit) {
+		if (!initList.isEmpty()) {
+			for (StrutsInit init : initList) {
+				try {
 					init.destroy();
+				} catch (Exception e) {
+					logger.error("The " + init.getClass() + " destroy faild", e);
 				}
-			} catch (Exception e) {
-				logger.error("Struts destroy faild", e);
 			}
 		}
 	}
@@ -153,28 +240,25 @@ public class StrutsContext {
 	}
 
 	public void addInit(Class<?> cla) {
-		initList.add(cla);
+		try {
+			initList.add((StrutsInit) cla.newInstance());
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void addClass(Class<?> cla) {
 		classlist.add(cla);
 	}
 
-	public void addResource(Field field) {
-		resourceList.add(field);
-	}
-
 	public void addAction(String action, Method method, Class<?> cla) {
-		if(!controllerlist.contains(cla))
-			controllerlist.add(cla);
 		ActionMapper actionMapper = actionMap.put(action, new ActionMapper(method));
 		if (actionMapper != null)
 			logger.error("Action " + action + " exist, override with " + method.getName());
 	}
 
 	public void addAction(String pattern, Method method, Class<?> cla, List<String> paras) {
-		if(!controllerlist.contains(cla))
-			controllerlist.add(cla);
 		ActionMapper actionMapper = patternActionMap.put(pattern, new ActionMapper(method, paras));
 		if (actionMapper != null)
 			logger.error("Action pattern " + pattern + " exist, override with " + method.getName());
@@ -217,10 +301,10 @@ public class StrutsContext {
 		return true;
 	}
 
-	private synchronized Object getBean(Class<?> controller) {
+	public static synchronized Object getBean(Class<?> controller) {
 		try {
 			Object obj = controller.newInstance();
-			annotationInject(obj);
+			annotationInject(obj, springMap.get(controller));
 			return obj;
 		} catch (InstantiationException | IllegalAccessException e) {
 			logger.error("Create '" + controller.getName() + "' bean faild", e);
@@ -228,20 +312,10 @@ public class StrutsContext {
 		return null;
 	}
 
-	private void annotationInject(Object obj)
-			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		if (obj == null)
-			return;
-		Field[] fieldArr = obj.getClass().getDeclaredFields();
-		SpringBean bean;
-		for (Field field : fieldArr) {
-			if (field.getAnnotation(Resource.class) != null) {
-				bean = springMap.get(field);
-				if (bean != null) {
-					field.setAccessible(true);
-					field.set(obj, getBean(bean.getBeanClass()));
-					field.setAccessible(false);
-				}
+	private static void annotationInject(Object obj, List<SpringBean> beans) {
+		if (beans != null && !beans.isEmpty()) {
+			for (SpringBean springBean : beans) {
+				springBean.setTargetValue(obj, getBean(springBean.getTargetClass()));
 			}
 		}
 	}
@@ -256,21 +330,5 @@ public class StrutsContext {
 
 	public int interceptorSize() {
 		return interceptors.size();
-	}
-
-	public List<Class<?>> getControllers() {
-		return controllerlist;
-	}
-
-	public void initBean(Class<?> cla) {
-		Object bean = getBean(cla);
-		for (ActionMapper action : actionMap.values()) {
-			if (action.getController().equals(cla))
-				action.cacheBean(bean);
-		}
-		for (ActionMapper action : patternActionMap.values()) {
-			if (action.getController().equals(cla))
-				action.cacheBean(cla);
-		}
 	}
 }

@@ -41,4 +41,8 @@ public class SessionListener implements HttpSessionListener
 		return sessionList;
 	}
 
+	public static HttpSession getSession(String id) {
+		return sessionList.get(id);
+	}
+
 }
