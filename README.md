@@ -1,6 +1,6 @@
 # struts
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/xiangjiangchuangyuan/struts/blob/master/LICENSE)
-![Jar Size](https://img.shields.io/badge/jar--size-63.67k-blue.svg)
+![Jar Size](https://img.shields.io/badge/jar--size-56.2k-blue.svg)
 
 ### 运行条件
 * tomcat(8.0.47+)
