@@ -24,20 +24,20 @@ public class ResponseWrapper {
 
 	private static final int minCompress = 256; // 最小压缩值
 	private static final int maxPrintLog = 4096; // 最大日志打印
-	
-	private final JSPWrapper jspWrapper;
-	private HttpServletRequest request;
-	private HttpServletResponse response;
 
-	public ResponseWrapper(HttpServletRequest request, HttpServletResponse response) {
-		this.request =request;
+	private final JSPWrapper jspWrapper;
+	private final HttpServletRequest request;
+	private final HttpServletResponse response;
+
+	public ResponseWrapper(HttpServletRequest request, HttpServletResponse response, JSPWrapper jspWrapper) {
+		this.request = request;
 		this.response = response;
-		jspWrapper = new JSPWrapper(request.getServletContext());
+		this.jspWrapper = jspWrapper;
 	}
 
 	public void doResponse(Object result) throws ServletException, IOException {
 		if (result instanceof ModelAndView)
-			dealView((ModelAndView)result);
+			dealView((ModelAndView) result);
 		else if (result instanceof String)
 			dealString(result.toString());
 		else if (result instanceof JSONMap)
@@ -46,24 +46,21 @@ public class ResponseWrapper {
 			throw new ServletException("不支持的返回类型 " + result.getClass());
 	}
 
-	private void dealView(ModelAndView mav)
-			throws ServletException, IOException {
+	private void dealView(ModelAndView mav) throws ServletException, IOException {
 		mav.fillRequest(request);
 		jspWrapper.processJsp(mav.getViewName(), request, response);
 		if (logger.isDebugEnabled())
 			logger.debug("Forward to " + mav.getViewName());
 	}
 
-	private void dealString(String text)
-			throws IOException, ServletException {
+	private void dealString(String text) throws IOException, ServletException {
 		response.setContentType(STR.CONTENT_TYPE_TEXT);
 		writeResponse(response, request, text);
 		if (logger.isDebugEnabled())
 			logger.debug("[TEXT]" + text);
 	}
 
-	private void dealJSON(String json)
-			throws IOException, ServletException {
+	private void dealJSON(String json) throws IOException, ServletException {
 		String jsonpCallback = request.getParameter("callback");
 		boolean isEmpty = StringUtils.isEmpty(jsonpCallback);
 		if (isEmpty)

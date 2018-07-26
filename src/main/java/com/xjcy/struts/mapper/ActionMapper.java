@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import com.xjcy.struts.ActionSupport;
 import com.xjcy.struts.context.StrutsContext;
 import com.xjcy.struts.context.WebContextUtils;
+import com.xjcy.struts.wrapper.JSPWrapper;
 import com.xjcy.struts.wrapper.ResponseWrapper;
 
 /**
@@ -50,7 +51,8 @@ public class ActionMapper {
 		}
 	}
 
-	public void invoke(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void invoke(HttpServletRequest request, HttpServletResponse response, JSPWrapper jspWrapper)
+			throws IOException, ServletException {
 		// 添加主目录属性
 		request.setAttribute("basePath", WebContextUtils.getBasePath(request));
 		if (this.paras != null) {
@@ -69,7 +71,7 @@ public class ActionMapper {
 			} else
 				resultObj = actionMethod.invoke(action);
 			if (resultObj != null) {
-				new ResponseWrapper(request, response).doResponse(resultObj);
+				new ResponseWrapper(request, response, jspWrapper).doResponse(resultObj);
 			}
 		} catch (Exception e) {
 			logger.error("Action call " + this.declaringClass.getName() + "." + actionMethod.getName() + " faild", e);

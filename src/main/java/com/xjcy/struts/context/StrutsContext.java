@@ -27,7 +27,7 @@ import com.xjcy.struts.StrutsInit;
 import com.xjcy.struts.annotation.Order;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.mapper.SpringBean;
-import com.xjcy.struts.wrapper.JSPCompile;
+import com.xjcy.struts.wrapper.JSPWrapper;
 import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
@@ -42,9 +42,9 @@ public class StrutsContext {
 	private static final Map<String, ActionMapper> patternActionMap = new HashMap<>();
 	private static final Map<Class<?>, List<SpringBean>> springMap = new HashMap<>();
 
-	public StrutsContext(ServletContext servlet) {
+	public StrutsContext(ServletContext servlet, JSPWrapper jspWrapper) {
 		scanPaths(servlet, servlet.getResourcePaths(STR.SLASH_LEFT));
-		startup(servlet);
+		startup(servlet, jspWrapper);
 	}
 
 	private void scanPaths(ServletContext arg1, Set<String> paths) {
@@ -91,7 +91,7 @@ public class StrutsContext {
 			if (field.getAnnotation(Resource.class) != null) {
 				if (springMap.containsKey(cla))
 					springMap.get(cla).add(new SpringBean(field));
-				else{
+				else {
 					List<SpringBean> beans = new ArrayList<>();
 					beans.add(new SpringBean(field));
 					springMap.put(cla, beans);
@@ -107,36 +107,31 @@ public class StrutsContext {
 		for (Method method : methods) {
 			// 获取request路径
 			action = WebContextUtils.getMappingPath(pkg, method);
-			if (!StringUtils.isEmpty(action)) {
+			if (StringUtils.isNotBlank(action)) {
 				if (action.contains("{") && action.contains("}")) {
 					List<String> paras = new ArrayList<>();
-					int start = 0;
 					String para;
 					String pattern = action;
-					while (true) {
-						para = getParameter(action, start);
-						if (para == null)
-							break;
-						start += para.length();
+					while ((para = getParameter(pattern)) != null) {
 						paras.add(para.replace("{", "").replace("}", ""));
 						pattern = pattern.replace(para, "(.*)");
 					}
-					addAction(pattern, method, cla, paras);
+					addAction(pattern, method, paras);
 				} else
-					addAction(action, method, cla);
+					addAction(action, method);
 			}
 		}
 	}
 
-	private static String getParameter(String action, int start) {
-		int begin = action.indexOf("{", start);
+	private static String getParameter(String action) {
+		int begin = action.indexOf("{");
 		if (begin == -1)
 			return null;
 		int end = action.indexOf("}", begin) + 1;
 		return action.substring(begin, end);
 	}
 
-	public void startup(ServletContext sc) {
+	public void startup(ServletContext sc, JSPWrapper jspWrapper) {
 		// 查找@Resource的实现类
 		findResource();
 		if (actionMap.size() > 0) {
@@ -150,7 +145,7 @@ public class StrutsContext {
 		}
 		// 判断线上环境，执行预编译
 		if (jspList.size() > 0 && WebContextUtils.isLinuxOS()) {
-			new JSPCompile(sc, true).execute(jspList);
+			jspWrapper.execute(jspList);
 		}
 	}
 
@@ -217,7 +212,6 @@ public class StrutsContext {
 		classlist.clear();
 		initList.clear();
 		interceptors.clear();
-		actionMap.clear();
 		jspList.clear();
 
 		// 清除解析好的Action和Bean
@@ -243,8 +237,7 @@ public class StrutsContext {
 		try {
 			initList.add((StrutsInit) cla.newInstance());
 		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Instance init faild", e);
 		}
 	}
 
@@ -252,13 +245,13 @@ public class StrutsContext {
 		classlist.add(cla);
 	}
 
-	public void addAction(String action, Method method, Class<?> cla) {
+	public void addAction(String action, Method method) {
 		ActionMapper actionMapper = actionMap.put(action, new ActionMapper(method));
 		if (actionMapper != null)
 			logger.error("Action " + action + " exist, override with " + method.getName());
 	}
 
-	public void addAction(String pattern, Method method, Class<?> cla, List<String> paras) {
+	public void addAction(String pattern, Method method, List<String> paras) {
 		ActionMapper actionMapper = patternActionMap.put(pattern, new ActionMapper(method, paras));
 		if (actionMapper != null)
 			logger.error("Action pattern " + pattern + " exist, override with " + method.getName());
@@ -268,13 +261,10 @@ public class StrutsContext {
 		jspList.add(path);
 	}
 
-	public int getClassSize() {
-		return classlist.size();
-	}
-
 	public ActionMapper getAction(String servletPath) {
 		ActionMapper mapper = actionMap.get(servletPath);
-		if (mapper == null) {
+		// 如果没有找到，则遍历所有正则路径
+		if (mapper == null && !patternActionMap.isEmpty()) {
 			Set<String> patterns = patternActionMap.keySet();
 			for (String pattern : patterns) {
 				Matcher match = Pattern.compile(pattern).matcher(servletPath);

@@ -14,17 +14,21 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.xjcy.struts.context.StrutsContext;
+import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.struts.mapper.ActionMapper;
+import com.xjcy.struts.wrapper.JSPWrapper;
 import com.xjcy.util.STR;
 
 public class StrutsFilter implements Filter {
 	private static final Logger logger = Logger.getLogger(StrutsFilter.class);
-	
+
 	private StrutsContext context;
+	private JSPWrapper jspWrapper;
 
 	@Override
 	public void init(FilterConfig arg0) throws ServletException {
-		context = new StrutsContext(arg0.getServletContext());
+		jspWrapper = new JSPWrapper(arg0.getServletContext(), WebContextUtils.isLinuxOS());
+		context = new StrutsContext(arg0.getServletContext(), jspWrapper);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Find actions " + context.actionSize() + " beans " + context.beanSize() + " interceptors "
 					+ context.interceptorSize());
@@ -52,7 +56,7 @@ public class StrutsFilter implements Filter {
 				return;
 			}
 			logger.debug("Find the action => " + servletPath);
-			action.invoke(request, response);
+			action.invoke(request, response, jspWrapper);
 		}
 	}
 
@@ -61,6 +65,10 @@ public class StrutsFilter implements Filter {
 		if (context != null) {
 			context.destory();
 			context = null;
+		}
+		if (jspWrapper != null) {
+			jspWrapper.destroy();
+			jspWrapper = null;
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("destroy context");

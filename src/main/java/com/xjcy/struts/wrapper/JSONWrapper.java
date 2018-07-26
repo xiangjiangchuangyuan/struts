@@ -8,8 +8,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.xjcy.struts.cache.JSONCache;
-
 /**
  * map转换为JSON
  * 
@@ -84,7 +82,7 @@ public class JSONWrapper
 		if (key == null)
 			json.append(STR_OBJECT_LEFT);
 		else json.append(STR_SLASH).append(key).append(STR_SLASH_OBJECT);
-		Field[] fields = JSONCache.getDeclaredFields(value.getClass());
+		Field[] fields = value.getClass().getDeclaredFields();
 		int num = 0;
 		Object obj2;
 		for (Field field : fields)
