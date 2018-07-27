@@ -37,7 +37,8 @@ public class StrutsContext {
 	private static final List<Class<?>> classlist = new ArrayList<>();
 	private static final List<String> jspList = new ArrayList<>();
 	private static final List<StrutsInit> initList = new ArrayList<>();
-	private static final List<Class<?>> interceptors = new ArrayList<>();
+	private static final List<Class<?>> interceptorList = new ArrayList<>();
+	private static final List<ActionInterceptor> interceptors = new ArrayList<>();
 	private static final Map<String, ActionMapper> actionMap = new HashMap<>();
 	private static final Map<String, ActionMapper> patternActionMap = new HashMap<>();
 	private static final Map<Class<?>, List<SpringBean>> springMap = new HashMap<>();
@@ -137,8 +138,8 @@ public class StrutsContext {
 		if (actionMap.size() > 0) {
 			mappingAction(sc.getFilterRegistration("StrutsFilter"));
 		}
-		if (interceptors.size() > 1) {
-			sortInterceptor();
+		if (interceptorList.size() > 0) {
+			sortInterceptor(interceptorList.size() > 1);
 		}
 		if (initList.size() > 0) {
 			startInit(sc);
@@ -159,21 +160,28 @@ public class StrutsContext {
 		}
 	}
 
-	private void sortInterceptor() {
-		// 按Order注解排序
-		Collections.sort(interceptors, new Comparator<Class<?>>() {
-			@Override
-			public int compare(Class<?> arg0, Class<?> arg1) {
-				Integer o1 = 0, o2 = 0;
-				Order order0 = arg0.getAnnotation(Order.class);
-				if (order0 != null)
-					o1 = order0.value();
-				Order order1 = arg1.getAnnotation(Order.class);
-				if (order1 != null)
-					o2 = order1.value();
-				return o1.compareTo(o2);
-			}
-		});
+	private void sortInterceptor(boolean sort) {
+		if (sort) {
+			// 按Order注解排序
+			Collections.sort(interceptorList, new Comparator<Class<?>>() {
+				@Override
+				public int compare(Class<?> arg0, Class<?> arg1) {
+					Integer o1 = 0, o2 = 0;
+					Order order0 = arg0.getAnnotation(Order.class);
+					if (order0 != null)
+						o1 = order0.value();
+					Order order1 = arg1.getAnnotation(Order.class);
+					if (order1 != null)
+						o2 = order1.value();
+					return o1.compareTo(o2);
+				}
+			});
+		}
+		// 初始化
+		for (Class<?> cla : interceptorList) {
+			interceptors.add((ActionInterceptor) getBean(cla));
+		}
+		interceptorList.clear();
 	}
 
 	private void findResource() {
@@ -211,6 +219,7 @@ public class StrutsContext {
 	public void destory() {
 		classlist.clear();
 		initList.clear();
+		interceptorList.clear();
 		interceptors.clear();
 		jspList.clear();
 
@@ -230,7 +239,7 @@ public class StrutsContext {
 	}
 
 	public void addInterceptor(Class<?> cla) {
-		interceptors.add(cla);
+		interceptorList.add(cla);
 	}
 
 	public void addInit(Class<?> cla) {
@@ -278,13 +287,17 @@ public class StrutsContext {
 		return mapper;
 	}
 
-	public boolean checkInterceptors(HttpServletRequest request, HttpServletResponse response) {
+	public boolean checkInterceptors(String path, HttpServletRequest request, HttpServletResponse response) {
 		if (interceptors.isEmpty())
 			return true;
-		ActionInterceptor interceptor;
-		for (Class<?> cla : interceptors) {
-			interceptor = (ActionInterceptor) getBean(cla);
-			logger.debug("Check " + cla.getSimpleName());
+		List<String> exceptPaths;
+		for (ActionInterceptor interceptor : interceptors) {
+			logger.debug("Check " + interceptor.getClass());
+			exceptPaths = interceptor.exceptPaths();
+			if (exceptPaths != null && exceptPaths.contains(path)) {
+				logger.debug("Except path " + path);
+				continue;
+			}
 			if (!interceptor.intercept(request, response))
 				return false;
 		}

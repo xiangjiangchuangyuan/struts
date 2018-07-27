@@ -49,13 +49,12 @@ public class StrutsFilter implements Filter {
 			logger.error("The action of '" + servletPath + "' not found");
 			arg2.doFilter(arg0, arg1);
 		} else {
+			logger.debug("Find the action => " + servletPath);
 			HttpServletResponse response = (HttpServletResponse) arg1;
-			if (!context.checkInterceptors(request, response)) {
-				if (logger.isDebugEnabled())
-					logger.debug("Action is blocked by Interceptor");
+			if (!context.checkInterceptors(servletPath, request, response)) {
+				logger.debug("Action is blocked by Interceptor");
 				return;
 			}
-			logger.debug("Find the action => " + servletPath);
 			action.invoke(request, response, jspWrapper);
 		}
 	}
