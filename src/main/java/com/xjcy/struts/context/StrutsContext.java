@@ -3,6 +3,7 @@ package com.xjcy.struts.context;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -92,11 +93,8 @@ public class StrutsContext {
 			if (field.getAnnotation(Resource.class) != null) {
 				if (springMap.containsKey(cla))
 					springMap.get(cla).add(new SpringBean(field));
-				else {
-					List<SpringBean> beans = new ArrayList<>();
-					beans.add(new SpringBean(field));
-					springMap.put(cla, beans);
-				}
+				else
+					springMap.put(cla, new ArrayList<>(Arrays.asList(new SpringBean(field))));
 			}
 		}
 	}
