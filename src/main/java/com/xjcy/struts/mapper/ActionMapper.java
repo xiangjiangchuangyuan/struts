@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.xjcy.struts.ActionSupport;
+import com.xjcy.struts.annotation.RequestMapping.HttpMethod;
 import com.xjcy.struts.context.StrutsContext;
 import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.struts.wrapper.JSPWrapper;
@@ -30,6 +31,7 @@ public class ActionMapper {
 	private static final Logger logger = Logger.getLogger(ActionMapper.class);
 
 	private final Method actionMethod;
+	private final HttpMethod httpMethod;
 	private List<String> paras;
 	private Map<String, String> paraValues;
 	private Class<?> declaringClass;
@@ -42,6 +44,7 @@ public class ActionMapper {
 
 	public ActionMapper(Method method, List<String> paras) {
 		this.actionMethod = method;
+		this.httpMethod = WebContextUtils.getHttpMethod(method);
 		this.declaringClass = method.getDeclaringClass();
 		this.parameterTypes = method.getParameterTypes();
 		this.length = this.parameterTypes.length;
@@ -111,6 +114,10 @@ public class ActionMapper {
 		for (String key : keys) {
 			request.setAttribute(key, paraValues.get(key));
 		}
+	}
+
+	public boolean checkMethod(String method) {
+		return this.httpMethod.toString().equals(method);
 	}
 
 }

@@ -11,6 +11,7 @@ import com.xjcy.struts.ActionInterceptor;
 import com.xjcy.struts.ActionSupport;
 import com.xjcy.struts.StrutsInit;
 import com.xjcy.struts.annotation.RequestMapping;
+import com.xjcy.struts.annotation.RequestMapping.HttpMethod;
 import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
@@ -53,20 +54,23 @@ public class WebContextUtils {
 
 	public static String getMappingPath(Class<?> cla) {
 		RequestMapping rm = cla.getAnnotation(RequestMapping.class);
-		if (rm != null)
-			return rm.value();
-		return "";
+		return rm != null ? rm.value() : STR.EMPTY;
 	}
 
 	public static String getMappingPath(String pkg, Method method) {
 		RequestMapping rm = method.getAnnotation(RequestMapping.class);
 		if (rm != null) {
 			String path = rm.value();
-			if (rm.value().startsWith("~"))
-				return path.substring(1, path.length());
+			if (path.startsWith("~"))
+				return path.substring(1);
 			return pkg + path;
 		}
 		return null;
+	}
+	
+	public static HttpMethod getHttpMethod(Method method) {
+		RequestMapping rm = method.getAnnotation(RequestMapping.class);
+		return rm != null ? rm.method() : HttpMethod.GET;
 	}
 
 	public static boolean isLinuxOS() {
@@ -81,7 +85,7 @@ public class WebContextUtils {
 		return new File(output, "/org/apache/jsp/" + className);
 	}
 
-	public static Object getBasePath(HttpServletRequest request) {
+	public static String getBasePath(HttpServletRequest request) {
 		if (StringUtils.isEmpty(basePath)) {
 			if (isLinuxOS())
 				basePath = "/";

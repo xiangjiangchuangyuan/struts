@@ -51,6 +51,11 @@ public class StrutsFilter implements Filter {
 		} else {
 			logger.debug("Find the action => " + servletPath);
 			HttpServletResponse response = (HttpServletResponse) arg1;
+			if (!action.checkMethod(request.getMethod())) {
+				response.sendError(405, "Request method '" + request.getMethod() + "' not supported");
+				logger.debug("Method not allowed");
+				return;
+			}
 			if (!context.checkInterceptors(servletPath, request, response)) {
 				logger.debug("Action is blocked by Interceptor");
 				return;
