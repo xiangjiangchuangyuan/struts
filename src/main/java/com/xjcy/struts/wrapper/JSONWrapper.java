@@ -2,6 +2,7 @@ package com.xjcy.struts.wrapper;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -67,23 +68,32 @@ public class JSONWrapper {
 
 	private void appendBean(Object obj) {
 		json.append(STR.BRACE_LEFT);
-		Field[] fields = obj.getClass().getDeclaredFields();
-		int len = fields.length;
-		for (int i = 0; i < len; i++) {
-			appendObj(fields[i].getName(), getValue(fields[i], obj), i != (len - 1));
+		Map<String, Object> map = getBeanValue(obj);
+		Iterator<String> keys = map.keySet().iterator();
+		String key;
+		while (keys.hasNext()) {
+			key = keys.next();
+			appendObj(key, map.get(key), keys.hasNext());
 		}
 		json.append(STR.BRACE_RIGHT);
 	}
 
-	private Object getValue(Field field, Object obj) {
+	private static Map<String, Object> getBeanValue(Object obj) {
+		Map<String, Object> map = new HashMap<>();
 		try {
-			field.setAccessible(true);
-			return field.get(obj);
+			Field[] fields = obj.getClass().getDeclaredFields();
+			Object obj2;
+			for (Field field : fields) {
+				field.setAccessible(true);
+				obj2 = field.get(obj);
+				field.setAccessible(false);
+				if (obj2 != null)
+					map.put(field.getName(), obj2);
+			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			return null;
-		} finally {
-			field.setAccessible(false);
+			logger.error("getBeanValue faild", e);
 		}
+		return map;
 	}
 
 	private void appendMap2(Map<?, ?> map) {
