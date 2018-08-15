@@ -47,10 +47,15 @@ public class ResponseWrapper {
 	}
 
 	private void dealView(ModelAndView mav) throws ServletException, IOException {
-		mav.fillRequest(request);
-		jspWrapper.processJsp(mav.getViewName(), request, response);
+		String view = mav.getViewName();
+		if (view.endsWith(".html") || view.endsWith(".htm"))
+			request.getRequestDispatcher(view).forward(request, response);
+		else {
+			mav.fillRequest(request);
+			jspWrapper.processJsp(view, request, response);
+		}
 		if (logger.isDebugEnabled())
-			logger.debug("Forward to " + mav.getViewName());
+			logger.debug("Forward to " + view);
 	}
 
 	private void dealString(String text) throws IOException, ServletException {
