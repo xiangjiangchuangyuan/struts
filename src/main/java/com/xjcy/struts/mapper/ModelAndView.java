@@ -79,6 +79,7 @@ public class ModelAndView
 				{
 					field.setAccessible(true);
 					addObject(field.getName(), field.get(obj));
+					field.setAccessible(false);
 					if (logger.isDebugEnabled())
 						logger.debug("addObject => " + field.getName() + "[" + field.get(obj) + "]");
 				}
