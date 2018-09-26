@@ -40,31 +40,21 @@ public class RoundTag extends BodyTagSupport
 	@Override
 	public int doEndTag() throws JspException
 	{
-		String format = "#";
-		if (digits > 0)
-		{
-			format += ".";
-			for (int i = 0; i < digits; i++)
-			{
-				format += "0";
-			}
-		}
-		try
-		{
-			try
-			{
-				double d = Double.parseDouble(value);
-				// 输出到浏览器
-				this.pageContext.getOut().append(new java.text.DecimalFormat(format).format(d));
-			}
-			catch (Exception e)
-			{
+		try {
+			try {
+				if (digits > 0) {
+					double d = Double.parseDouble(value);
+					// 输出到浏览器
+					this.pageContext.getOut().append(String.format("%." + digits + "f", d));
+				} else {
+					// 输出到浏览器
+					this.pageContext.getOut().append(value);
+				}
+			} catch (Exception e) {
 				logger.error("输出round标签失败", e);
-				this.pageContext.getOut().append(format.replace("#", "0"));
+				this.pageContext.getOut().append(value);
 			}
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			logger.error("输出round标签失败", e);
 		}
 		return EVAL_PAGE;
