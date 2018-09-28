@@ -5,7 +5,7 @@ import java.io.IOException;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.apache.log4j.Logger;
+import com.xjcy.util.LoggerUtils;
 
 public class ElseTag extends BodyTagSupport
 {
@@ -13,7 +13,7 @@ public class ElseTag extends BodyTagSupport
 	 * 
 	 */
 	private static final long serialVersionUID = -7339585316460624996L;
-	private static final Logger logger = Logger.getLogger(ElseTag.class);
+	private static final LoggerUtils logger = LoggerUtils.from(ElseTag.class);
 
 	@Override
 	public int doStartTag() throws JspException

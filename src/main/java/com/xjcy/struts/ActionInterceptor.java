@@ -6,11 +6,11 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import com.xjcy.util.LoggerUtils;
 
 public abstract class ActionInterceptor
 {
-	private static final Logger logger = Logger.getLogger(ActionInterceptor.class);
+	private static final LoggerUtils logger = LoggerUtils.from(ActionInterceptor.class);
 			
 	public abstract boolean intercept(HttpServletRequest arg0, HttpServletResponse arg1);
 	

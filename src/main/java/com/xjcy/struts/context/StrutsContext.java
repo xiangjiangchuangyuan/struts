@@ -21,19 +21,18 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
 import com.xjcy.struts.ActionInterceptor;
 import com.xjcy.struts.StrutsInit;
 import com.xjcy.struts.annotation.Order;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.mapper.SpringBean;
 import com.xjcy.struts.wrapper.JSPWrapper;
+import com.xjcy.util.LoggerUtils;
 import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
 public class StrutsContext {
-	private static final Logger logger = Logger.getLogger(StrutsContext.class);
+	private static final LoggerUtils logger = LoggerUtils.from(StrutsContext.class);
 
 	private static final List<Class<?>> classlist = new ArrayList<>();
 	private static final List<String> jspList = new ArrayList<>();

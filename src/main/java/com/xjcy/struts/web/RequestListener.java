@@ -4,11 +4,11 @@ import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import com.xjcy.util.LoggerUtils;
 
 public class RequestListener implements ServletRequestListener
 {
-	private static final Logger logger = Logger.getLogger(RequestListener.class);
+	private static final LoggerUtils logger = LoggerUtils.from(RequestListener.class);
 
 	@Override
 	public void requestDestroyed(ServletRequestEvent arg0)

@@ -27,11 +27,11 @@ import org.apache.jasper.compiler.TldCache;
 import org.apache.jasper.runtime.HttpJspBase;
 import org.apache.jasper.servlet.JspCServletContext;
 import org.apache.jasper.servlet.TldScanner;
-import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.util.FileUtils;
+import com.xjcy.util.LoggerUtils;
 import com.xjcy.util.STR;
 
 /***
@@ -42,7 +42,7 @@ import com.xjcy.util.STR;
  */
 public class JSPWrapper implements Options {
 
-	static final Logger logger = Logger.getLogger(JSPWrapper.class);
+	static final LoggerUtils logger = LoggerUtils.from(JSPWrapper.class);
 
 	final Map<String, HttpJspBase> jspServlets = new HashMap<>();
 	private String uriRoot;

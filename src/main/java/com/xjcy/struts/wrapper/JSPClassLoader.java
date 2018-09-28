@@ -6,11 +6,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.log4j.Logger;
+import com.xjcy.util.LoggerUtils;
 
 public class JSPClassLoader extends ClassLoader
 {
-	private static final Logger logger = Logger.getLogger(JSPClassLoader.class);
+	private static final LoggerUtils logger = LoggerUtils.from(JSPClassLoader.class);
 
 	private File classFile;
 	byte[] classData;

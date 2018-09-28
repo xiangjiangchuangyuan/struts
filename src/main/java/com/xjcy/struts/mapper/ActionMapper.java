@@ -12,14 +12,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
 import com.xjcy.struts.ActionSupport;
 import com.xjcy.struts.annotation.RequestMapping.HttpMethod;
 import com.xjcy.struts.context.StrutsContext;
 import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.struts.wrapper.JSPWrapper;
 import com.xjcy.struts.wrapper.ResponseWrapper;
+import com.xjcy.util.LoggerUtils;
 
 /**
  * Action处理类
@@ -28,7 +27,7 @@ import com.xjcy.struts.wrapper.ResponseWrapper;
  *
  */
 public class ActionMapper {
-	private static final Logger logger = Logger.getLogger(ActionMapper.class);
+	private static final LoggerUtils logger = LoggerUtils.from(ActionMapper.class);
 
 	private final Method actionMethod;
 	private final HttpMethod httpMethod;

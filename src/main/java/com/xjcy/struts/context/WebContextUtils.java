@@ -5,18 +5,17 @@ import java.lang.reflect.Method;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
-
 import com.xjcy.struts.ActionInterceptor;
 import com.xjcy.struts.ActionSupport;
 import com.xjcy.struts.StrutsInit;
 import com.xjcy.struts.annotation.RequestMapping;
 import com.xjcy.struts.annotation.RequestMapping.HttpMethod;
+import com.xjcy.util.LoggerUtils;
 import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
 public class WebContextUtils {
-	private static final Logger logger = Logger.getLogger(WebContextUtils.class);
+	private static final LoggerUtils logger = LoggerUtils.from(WebContextUtils.class);
 
 	static Boolean isLinux;
 	private static String basePath;

@@ -11,16 +11,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
 import com.xjcy.struts.context.StrutsContext;
 import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.struts.mapper.ActionMapper;
 import com.xjcy.struts.wrapper.JSPWrapper;
+import com.xjcy.util.LoggerUtils;
 import com.xjcy.util.STR;
 
 public class StrutsFilter implements Filter {
-	private static final Logger logger = Logger.getLogger(StrutsFilter.class);
+	private static final LoggerUtils logger = LoggerUtils.from(StrutsFilter.class);
 
 	private StrutsContext context;
 	private JSPWrapper jspWrapper;

@@ -5,7 +5,7 @@ import java.io.IOException;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.apache.log4j.Logger;
+import com.xjcy.util.LoggerUtils;
 
 public class RoundTag extends BodyTagSupport
 {
@@ -15,7 +15,7 @@ public class RoundTag extends BodyTagSupport
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger logger = Logger.getLogger(RoundTag.class);
+	private static final LoggerUtils logger = LoggerUtils.from(RoundTag.class);
 
 	private String value;
 

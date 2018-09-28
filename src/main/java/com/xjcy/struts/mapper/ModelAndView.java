@@ -8,9 +8,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
-
 import com.xjcy.struts.wrapper.EachItem;
+import com.xjcy.util.LoggerUtils;
 
 /**
  * jsp的对象和跳转页面配置
@@ -20,7 +19,7 @@ import com.xjcy.struts.wrapper.EachItem;
  */
 public class ModelAndView
 {
-	private static final Logger logger = Logger.getLogger(ModelAndView.class);
+	private static final LoggerUtils logger = LoggerUtils.from(ModelAndView.class);
 
 	private final Map<String, Object> paras = new HashMap<>();
 	private String viewName;

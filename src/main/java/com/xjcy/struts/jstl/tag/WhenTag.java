@@ -5,7 +5,7 @@ import java.io.IOException;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.apache.log4j.Logger;
+import com.xjcy.util.LoggerUtils;
 
 public class WhenTag extends BodyTagSupport
 {
@@ -13,7 +13,7 @@ public class WhenTag extends BodyTagSupport
 	 * 
 	 */
 	private static final long serialVersionUID = 4778987987915422993L;
-	private static final Logger logger = Logger.getLogger(WhenTag.class);
+	private static final LoggerUtils logger = LoggerUtils.from(WhenTag.class);
 
 	private String test;
 

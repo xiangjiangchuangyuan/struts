@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItemIterator;
 import org.apache.tomcat.util.http.fileupload.FileItemStream;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
@@ -19,11 +18,12 @@ import com.xjcy.struts.mapper.MultipartFile;
 import com.xjcy.struts.web.SessionListener;
 import com.xjcy.struts.wrapper.MultipartRequestWrapper;
 import com.xjcy.util.DateEx;
+import com.xjcy.util.LoggerUtils;
 import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
 public abstract class ActionSupport {
-	private static final Logger logger = Logger.getLogger(ActionSupport.class);
+	private static final LoggerUtils logger = LoggerUtils.from(ActionSupport.class);
 
 	private HttpServletRequest httpServletRequest;
 	private HttpServletResponse httpServletResponse;
@@ -111,7 +111,7 @@ public abstract class ActionSupport {
 				}
 				return tt;
 			} catch (Exception e) {
-				logger.debug("获取页面数据失败", e);
+				logger.error("获取页面数据失败", e);
 			}
 		}
 		return null;

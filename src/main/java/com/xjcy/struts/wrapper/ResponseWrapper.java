@@ -10,17 +10,16 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
 import com.xjcy.struts.context.WebContextUtils;
 import com.xjcy.struts.mapper.JSONMap;
 import com.xjcy.struts.mapper.ModelAndView;
+import com.xjcy.util.LoggerUtils;
 import com.xjcy.util.ObjectUtils;
 import com.xjcy.util.STR;
 import com.xjcy.util.StringUtils;
 
 public class ResponseWrapper {
-	private static final Logger logger = Logger.getLogger(ResponseWrapper.class);
+	private static final LoggerUtils logger = LoggerUtils.from(ResponseWrapper.class);
 
 	private static final int minCompress = 256; // 最小压缩值
 	private static final int maxPrintLog = 4096; // 最大日志打印

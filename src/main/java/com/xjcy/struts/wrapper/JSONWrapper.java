@@ -7,8 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
+import com.xjcy.util.LoggerUtils;
 import com.xjcy.util.STR;
 
 /**
@@ -17,7 +16,7 @@ import com.xjcy.util.STR;
  * @author YYDF 2018-01-15
  */
 public class JSONWrapper {
-	private static final Logger logger = Logger.getLogger(JSONWrapper.class);
+	private static final LoggerUtils logger = LoggerUtils.from(JSONWrapper.class);
 
 	private static final String STR_VERSION_UID = "serialVersionUID";
 	final StringBuilder json = new StringBuilder();
@@ -46,7 +45,7 @@ public class JSONWrapper {
 	}
 
 	private void appendObj(String key, Object obj, boolean hasNext) {
-		if (obj == null || STR_VERSION_UID.equals(key) || obj instanceof Logger)
+		if (obj == null || STR_VERSION_UID.equals(key))
 			return;
 		if (key != null)
 			json.append(STR.MARKS).append(key).append(STR.MARKS).append(STR.COLON);

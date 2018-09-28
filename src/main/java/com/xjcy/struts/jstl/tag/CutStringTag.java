@@ -5,14 +5,14 @@ import java.io.IOException;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.apache.log4j.Logger;
+import com.xjcy.util.LoggerUtils;
 
 public class CutStringTag extends BodyTagSupport {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -327645925586914122L;
-	private static final Logger logger = Logger.getLogger(CutStringTag.class);
+	private static final LoggerUtils logger = LoggerUtils.from(CutStringTag.class);
 
 	private String str;
 	private int len;
